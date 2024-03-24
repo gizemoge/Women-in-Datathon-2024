@@ -275,6 +275,35 @@ p_num_cols
  'emp_test_percentage',
  'mba_percent']'''
 
+#status grafiği
+sns.countplot(x='status', data=placement, hue='gender')
+plt.show()
+
+#specialisation
+sns.countplot(x='specialisation', data=placement, hue='gender')
+plt.show()
+
+#bunların yerine kategoriklerin hepsini cinsiyet ayrımında subplot ile yapalım
+plt.figure(figsize = (15, 10))
+plt.suptitle("Analysis Of Variable Gender",fontweight="bold", fontsize=18)
+plt.subplot(4,2,1)
+sns.countplot(x='status', hue='gender', palette='Set2', data=placement)
+plt.subplot(4,2,2)
+sns.countplot(x='ssc_board', hue='gender', palette='Set2', data=placement)
+plt.subplot(4,2,3)
+sns.countplot(x='hsc_board', hue='gender', palette='Set2', data=placement)
+plt.subplot(4,2,4)
+sns.countplot(x ='hsc_subject', hue='gender', palette='Set2', data=placement)
+plt.subplot(4,2,5)
+sns.countplot(x='undergrad_degree', hue='gender', palette='Set2', data=placement)
+plt.subplot(4,2,6)
+sns.countplot(x='work_experience', hue='gender', palette='Set2', data=placement)
+plt.subplot(4,2,7)
+sns.countplot(x='specialisation', hue='gender', palette='Set2', data=placement)
+plt.tight_layout()  # Grafiklerin sığabileceği şekilde ayarlama
+plt.show()
+
+
 #nümerik kolonların histogramı
 placement.hist(figsize=(12,8))
 plt.show()
@@ -340,4 +369,42 @@ placement.head()
 p_num_cols.append('all_percent')
 
 placement.groupby(['gender', 'status'])[p_num_cols].mean()
+placement.groupby(['gender', 'status'])['all_percent'].mean()
+
+
+
+# Nümerik sütunların box plotlarını çizelim
+plt.figure(figsize=(10, 6))  # Grafik boyutunu ayarlayalım
+sns.boxplot(data=placement, orient="h")  # Box plotları yatay olarak çizelim
+plt.title('Nümerik Sütunların Box Plotları')  # Grafik başlığını ekleyelim
+plt.xlabel('Değerler')  # X ekseni etiketini ekleyelim
+plt.show()  # Grafiği gösterelim
+
+#korelasyon matrisi
+plt.figure(figsize=(8, 6))
+sns.heatmap(placement[p_num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Korelasyon Matrisi')
+plt.show()
+
+placement.info()
+
+
+
+import plotly.graph_objects as go
+# Veri setindeki nümerik kolonların heatmap için bir örnek veri oluşturulması
+data = placement[p_num_cols].corr()
+# Heatmap oluşturma
+fig = go.Figure(data=go.Heatmap(
+        z=data.values,
+        x=data.columns,
+        y=data.columns,
+        colorscale='Viridis'))
+# Grafiği gösterme
+fig.update_layout(title="Nümerik Kolonlar için Korelasyon Heatmap'i")
+fig.show()
+#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!
+
+
+
+
 
