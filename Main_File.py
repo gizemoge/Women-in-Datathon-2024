@@ -75,7 +75,7 @@ new_names = [
     "placement"
 ]
 
-dfs = [pd.read_csv(f"datasets/{name}.csv", sep=",") if sep == "," else pd.read_csv(f"datasets/{name}.csv", sep=";") for name in name_of_files]
+#dfs = [pd.read_csv(f"datasets/{name}.csv", sep=",") if sep == "," else pd.read_csv(f"datasets/{name}.csv", sep=";") for name in name_of_files]
 
 dfs_dict = {new_name: df for new_name, df in zip(new_names, dfs)}
 
@@ -165,7 +165,7 @@ female_labor_force.shape
 # 195 ülke için, 1990-2021 arasındaki yıllar için, 15 yaş ve üzeri kadınların iş gücüne katılma oranları
 # TODO 8 ve 9 birleştirilebilir
 countries=[]
-[countries.append if female_labor_force.Country not in male_labor_force.Country]
+#[countries.append if female_labor_force.Country not in male_labor_force.Country]
 
 
 placement.head()
@@ -207,4 +207,137 @@ merged_all = pd.merge(female_labor_force, male_labor_force, on=["Year", 'Country
 
 
 
+
+#Eda
+placement.head()
+placement.columns
+'''Data Dictionary
+gender : Gender of the candidate
+ssc_percentage : Senior secondary exams percentage (10th Grade)
+ssc_board : Board of education for ssc exams
+hsc_percentage : Higher secondary exams percentage (12th Grade)
+hsc_borad : Board of education for hsc exams
+hsc_subject : Subject of study for hsc
+degree_percentage : Percentage of marks in undergrad degree
+undergrad_degree : Undergrad degree majors
+work_experience : Past work experience
+emp_test_percentage : Aptitude test percentage  **yetenek testi yüzdesi
+specialization : Postgrad degree majors - (MBA specialization)
+mba_percent : Percentage of marks in MBA degree
+status (TARGET) : Status of placement. Placed / Not Placed  **işe yerleştirilme durumu
+Özellikle gelişmekte olan ülkelerde eğitimli ve yetenekli bireylere duyulan ihtiyacın artması nedeniyle, 
+yeni mezunların işe alınması kuruluşlar için rutin bir uygulamadır. 
+Geleneksel işe alım yöntemleri ve seçim süreçleri hatalara açık olabilir ve 
+tüm süreci optimize etmek için bazı yenilikçi yöntemlere ihtiyaç vardır.'''
+placement.shape
+placement.isnull().sum() #eksik değer yok
+placement.describe().T
+placement.info()
+placement.gender.value_counts()   #139 erkek, 76 kadın
+placement.nunique()
+
+def grab_col_names(dataframe, cat_th=10, car_th=20):
+    #cat_cols, cat_but_car
+    cat_cols = [col for col in dataframe.columns if dataframe[col].dtypes == "O"]
+    num_but_cat = [col for col in dataframe.columns if dataframe[col].nunique() < cat_th and
+                   dataframe[col].dtypes != "O"]
+    cat_but_car = [col for col in dataframe.columns if dataframe[col].nunique() > car_th and
+                   dataframe[col].dtypes == "O"]
+    cat_cols = cat_cols + num_but_cat
+    cat_cols = [col for col in cat_cols if col not in cat_but_car]
+
+    #num_cols
+    num_cols = [col for col in dataframe.columns if dataframe[col].dtypes != "O"]
+    num_cols = [col for col in num_cols if col not in num_but_cat]
+
+    print(f"Observations: {dataframe.shape[0]}")
+    print(f"Variables: {dataframe.shape[1]}")
+    print(f"cat_cols: {len(cat_cols)}")
+    print(f"num_cols: {len(num_cols)}")
+    print(f"cat_but_car: {len(cat_but_car)}")
+    print(f"num_but_car: {len(num_but_cat)}")
+    return cat_cols, num_cols, cat_but_car
+
+p_cat_cols, p_num_cols, p_cat_but_car = grab_col_names(placement)   #placement dataframine ait kategorik ve nümerik değişkenler old. için başına p koydum
+p_cat_cols
+'''['gender',
+ 'ssc_board',
+ 'hsc_board',
+ 'hsc_subject',
+ 'undergrad_degree',
+ 'work_experience',
+ 'specialisation',
+ 'status']'''
+p_num_cols
+'''['ssc_percentage',
+ 'hsc_percentage',
+ 'degree_percentage',
+ 'emp_test_percentage',
+ 'mba_percent']'''
+
+#nümerik kolonların histogramı
+placement.hist(figsize=(12,8))
+plt.show()
+
+
+
+# Kadın ve erkek gruplarını ayırma ve her bir sütun için nümerik kolonların histogramları ayrı ayrı çizme
+fig, axs = plt.subplots(len(p_num_cols), 2, figsize=(12, 2 * len(p_num_cols)))
+
+for i, column in enumerate(p_num_cols):
+    male_data = placement[placement['gender'] == 'M']
+    female_data = placement[placement['gender'] == 'F']
+
+    male_data[column].hist(ax=axs[i, 0], color='blue')
+    axs[i, 0].set_title('Male ' + column)
+    axs[i, 0].set_ylabel('Frequency')
+
+    female_data[column].hist(ax=axs[i, 1], color='red')
+    axs[i, 1].set_title('Female ' + column)
+    axs[i, 1].set_ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
+def outlier_thresholds(dataframe, col_name, q1=0.05, q3=0.95):
+    quartile1 = dataframe[col_name].quantile(q1)
+    quartile3 = dataframe[col_name].quantile(q3)
+    interquantile_range = quartile3 - quartile1
+    up_limit = quartile3 + 1.5 * interquantile_range
+    low_limit = quartile1 - 1.5 * interquantile_range
+    print(f"{col_name} sütunu için alt ve üst limit değerleri: ({low_limit}, {up_limit})")
+    return low_limit, up_limit
+
+for col in p_num_cols:
+    outlier_thresholds(placement, col)
+
+
+def grab_outliers(dataframe, col_name, index=False):
+    low, up = outlier_thresholds(dataframe, col_name)
+    if dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].shape[0] > 10:
+        print(dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].head())
+    else:
+        print(dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))])
+
+    if index:
+        outlier_index = dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].index
+        return outlier_index
+
+for col in p_num_cols:
+    grab_outliers(placement, col)
+#outlier yok
+
+
+placement.groupby(['gender', 'status'])[p_num_cols].mean()
+
+#başarı yüzdelerinin ortalamasından oluşan bir sütun ekleyelim
+#all_percent = (ssc_percentage + hsc_percentage + degree_percentage + emp_test_percentage + mba_percent) / 4
+
+placement['all_percent'] = (placement['ssc_percentage'] + placement['degree_percentage'] + placement['emp_test_percentage'] + placement['mba_percent']) / 4
+
+placement.info()
+placement.head()
+p_num_cols.append('all_percent')
+
+placement.groupby(['gender', 'status'])[p_num_cols].mean()
 
