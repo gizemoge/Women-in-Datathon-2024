@@ -278,3 +278,20 @@ female_labor_force.info()
 
 male_labor_force["Year"] = male_labor_force["Year"].astype("int")
 male_labor_force.info()
+
+## difference
+gender_set = set(gender_wage_gap['Country'])
+
+
+other_union = set().union(*[set(df['Country']) for df in dfs_to_concat if not df.equals(gender_wage_gap)])
+
+# A_set'te olmayıp diğerlerinin birleşiminde olan ülkelerin farkını hesaplayalım
+difference = other_union.difference(gender_set)
+
+sorted_gender_set = sorted(gender_set)
+sorted_difference = sorted(difference)
+
+print("gender DataFrame'deki ülkeler (alfabetik sıralı):")
+print(sorted_gender_set)
+print("\ngender'da olmayıp diğerlerinin birleşiminde olan ülkeler (alfabetik sıralı):")
+print(sorted_difference)
