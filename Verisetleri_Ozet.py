@@ -9,10 +9,21 @@ w_entrepreneurship = pd.read_csv("datasets/Labor Force-Women Entrpreneurship.csv
 male_labor_force = pd.read_csv("datasets/Labour Force Participation - Male.csv")
 female_labor_force = pd.read_csv("datasets/Labour Force Participation Female.csv")
 placement = pd.read_csv("datasets/Placement.csv")
+parliament = pd.read_excel("datasets/Parliament.xlsx")
+adolescent_fertility_rate = pd.read_excel("datasets/Adolescent_Fertility_Rate.xlsx")
+human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
 
 
 1)  1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work
+    '''(Rapordan) Note: Gender inequality in unpaid care work refers to the female to
+    male ratio of time spent in unpaid care work. The fitted value of the
+    female share in the active population is estimated by controlling for
+    the country’s GDP per capita, fertility rate, urbanisation rate, maternity
+    leave policies and gender inequality in unemployment and education.'''
+
     f_to_m_unpaid_care_work.head()
+    f_to_m_unpaid_care_work.shape
+    #
     """
     Değişkenler:
         'Entity'
@@ -22,6 +33,9 @@ placement = pd.read_csv("datasets/Placement.csv")
         'Year'
             2014
         'Female to male ratio of time devoted to unpaid care work (OECD (2014))'
+            Ne kadar çok kadın, erkeğe göre ev işi yükleniyor? 
+            Min: 1.18
+            Max: 17.29
     """
 
 2)  2- share-of-women-in-top-income-groups
@@ -133,6 +147,15 @@ placement = pd.read_csv("datasets/Placement.csv")
             Placed/Not placed
     """
 #Women Ent_Data3 (7 ile aynı olduğu için silindi)
+
+9)  parliament
+
+10) adolescent_fertility_rate
+
+11) human_dev_indices
+
+
+#########################
 
 # Aşağıdaki verisetlerinde ülke isimlerini temsil eden Entity değişkeninin ismi, uyumluluk sağlamak için Country olarak değiştirildi.
     # f_to_m_unpaid_care_work

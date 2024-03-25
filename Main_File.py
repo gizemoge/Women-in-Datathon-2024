@@ -15,36 +15,11 @@ from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, Ro
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.ensemble import RandomForestRegressor
 
-
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 170)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-
-
-
-
-# tek tek okutmamak için, for döngüsü içinde okutma
-
-name_of_files = ["1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work",
-                 "2- share-of-women-in-top-income-groups",
-                 "3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi",
-                 "4- female-to-male-ratio-of-time-devoted-to-unpaid-care-work",
-                 "5- maternal-mortality",
-                 "6- gender-gap-in-average-wages-ilo",
-                 "Labor Force-Women Entrpreneurship",
-                 "Labour Force Participation - Male",
-                 "Labour Force Participation Female",
-                 "Placement",
-                 "Women Ent_Data3"]
-dfs = []
-for i in name_of_files:
-    df = pd.read_csv(f"datasets/{i}.csv")
-    dfs.append(df)
-
-
-# 23 mart - gizem's alternative (normal okunuş)
 f_to_m_unpaid_care_work = pd.read_csv("datasets/1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
 w_in_top_income_groups = pd.read_csv("datasets/2- share-of-women-in-top-income-groups.csv")
 f_to_m_labor_force_part = pd.read_csv("datasets/3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi.csv")
@@ -66,20 +41,8 @@ f_to_m_labor_force_part.head()
 w_entrepreneurship.head()
 
 f_to_m_unpaid_care_work.head()
-f_to_m_unpaid_care_work.columns
-f_to_m_unpaid_care_work.shape
-#['Entity', 'Code', 'Year', 'Female to male ratio of time devoted to unpaid care work (OECD (2014))']
-# Entity: ülke ismi (ör: Albania). Kategorik
-# Code: ülke kodu (ör: ALB). Kategorik
-# Year: 2014 yılı
-# F/M: Ne kadar çok kadın, erkeğe göre ev işi yükleniyor? Min: 1.18, Max: 17.29. Numerik.
 f_to_m_unpaid_care_work = f_to_m_unpaid_care_work.rename(columns={'Entity' : 'Country'})
 
-'''(Rapordan) Note: Gender inequality in unpaid care work refers to the female to
-male ratio of time spent in unpaid care work. The fitted value of the
-female share in the active population is estimated by controlling for
-the country’s GDP per capita, fertility rate, urbanisation rate, maternity
-leave policies and gender inequality in unemployment and education.'''
 
 w_in_top_income_groups.head()
 w_in_top_income_groups.columns
@@ -136,7 +99,7 @@ female_labor_force.shape
 # 195 ülke için, 1990-2021 arasındaki yıllar için, 15 yaş ve üzeri kadınların iş gücüne katılma oranları
 # TODO 8 ve 9 birleştirilebilir
 countries=[]
-[countries.append if female_labor_force.Country not in male_labor_force.Country]
+# [countries.append if female_labor_force.Country not in male_labor_force.Country]
 
 
 placement.head()
