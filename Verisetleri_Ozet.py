@@ -54,6 +54,7 @@ placement = pd.read_csv("datasets/Placement.csv")
 #4 (1 ile aynı olduğu için silindi)
 
 4)  5- maternal-mortality
+    # The maternal mortality ratio is the number of women who die from pregnancy-related causes while pregnant or within 42 days of pregnancy termination per 100,000 live births.
     maternal_mortality.head()
     """
     Değişkenler:
@@ -137,4 +138,29 @@ placement = pd.read_csv("datasets/Placement.csv")
     # f_to_m_unpaid_care_work
     # w_in_top_income_groups
     # gender_wage_gap
-    #
+
+entity_dfs = [f_to_m_unpaid_care_work, w_in_top_income_groups, gender_wage_gap]
+
+for df in entity_dfs:
+    df.replace({"Entity":"Country"})
+
+# Ülke kodlarını temsil eden Code değişkeni, veriseti birleştirme ve makine öğrenmesi süreçlerinde sorun yaratma olasılığına karşın drop edildi.
+    # f_to_m_unpaid_care_work
+    # w_in_top_income_groups
+    # f_to_m_labor_force_part
+    # maternal_mortality
+    # gender_wage_gap
+    # w_entrepreneurship (No)
+
+code_drop_dfs = [f_to_m_unpaid_care_work, w_in_top_income_groups, f_to_m_labor_force_part, maternal_mortality, gender_wage_gap]
+
+for df in code_drop_dfs:
+    df.drop(columns="Code", inplace=True)
+
+# Female labor force participation ve male labor force participation verisetleri birleştirildi
+    # merged_labor_force
+
+# Kadınların parlamento katılım oranları veriseti ve çocuk hamileliği veriseti eklendi.
+    # Parliament
+    # Adolescent_fertility_rate
+
