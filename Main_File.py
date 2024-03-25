@@ -23,17 +23,7 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 
 
-df_1 = pd.read_csv("datasets/1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
-df_2 = pd.read_csv("datasets/2- share-of-women-in-top-income-groups.csv")
-df_3 = pd.read_csv("datasets/3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi.csv")
-df_4 = pd.read_csv("datasets/4- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
-df_5 = pd.read_csv("datasets/5- maternal-mortality.csv")
-df_6 = pd.read_csv("datasets/6- gender-gap-in-average-wages-ilo.csv")
-df_7 = pd.read_csv("datasets/Labor Force-Women Entrpreneurship.csv", sep=";")
-df_8 = pd.read_csv("datasets/Labour Force Participation - Male.csv")
-df_9 = pd.read_csv("datasets/Labour Force Participation Female.csv")
-df_10 = pd.read_csv("datasets/Placement.csv")
-df_11 = pd.read_csv("datasets/Women Ent_Data3.csv", sep=";")
+
 
 # tek tek okutmamak için, for döngüsü içinde okutma
 
@@ -53,35 +43,6 @@ for i in name_of_files:
     df = pd.read_csv(f"datasets/{i}.csv")
     dfs.append(df)
 
-# 23 mart - gizem
-name_of_files = ["1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work",
-                 "2- share-of-women-in-top-income-groups",
-                 "3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi",
-                 "5- maternal-mortality",
-                 "Labor Force-Women Entrpreneurship",
-                 "Labour Force Participation - Male",
-                 "Labour Force Participation Female",
-                 "Placement",
-                 "Women Ent_Data3"]
-new_names = [
-    "f_to_m_unpaid_care_work",
-    "w_in_top_income_groups",
-    "f_to_m_labor_force_part",
-    "maternal_mortality",
-    "gender_wage_gap",
-    "w_entrepreneurship",
-    "male_labor_force",
-    "female_labor_force",
-    "placement"
-]
-
-dfs = [pd.read_csv(f"datasets/{name}.csv", sep=",") if sep == "," else pd.read_csv(f"datasets/{name}.csv", sep=";") for name in name_of_files]
-
-dfs_dict = {new_name: df for new_name, df in zip(new_names, dfs)}
-
-for isim, df in dfs_dict.items():
-    globals()[isim] = df
-
 
 # 23 mart - gizem's alternative (normal okunuş)
 f_to_m_unpaid_care_work = pd.read_csv("datasets/1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
@@ -94,7 +55,15 @@ male_labor_force = pd.read_csv("datasets/Labour Force Participation - Male.csv")
 female_labor_force = pd.read_csv("datasets/Labour Force Participation Female.csv")
 placement = pd.read_csv("datasets/Placement.csv")
 # 1 ve 4, 7 ve 11 excel'ler aynı
+parliament = pd.read_excel("datasets/Parliament.xlsx")
+adolescent_fertility_rate = pd.read_excel("datasets/Adolescent_Fertility_Rate.xlsx")
+human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
 
+female_labor_force.head()
+w_in_top_income_groups.head()
+w_in_top_income_groups["Entity"].value_counts()
+f_to_m_labor_force_part.head()
+w_entrepreneurship.head()
 
 f_to_m_unpaid_care_work.head()
 f_to_m_unpaid_care_work.columns
@@ -117,7 +86,8 @@ w_in_top_income_groups.columns
 #['Entity', 'Code', 'Year', 'Share of women in top 0.1%', 'Share of women in top 0.25%', 'Share of women in top 0.5%', 'Share of women in top 1%','Share of women in top 10%', 'Share of women in top 5%']
 # Share of women: Maaş olarak en üst %x'te yer alan kadınların oranı. Numerik.
 w_in_top_income_groups = w_in_top_income_groups.rename(columns={'Entity' : 'Country'})
-
+w_in_top_income_groups["Entity"].nunique()
+# burada 8 tane ülke var
 
 f_to_m_labor_force_part.head()
 f_to_m_labor_force_part.columns
@@ -130,7 +100,8 @@ maternal_mortality.head()
 maternal_mortality.columns
 # ['Entity', 'Code', 'Year', 'Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))']
 maternal_mortality.shape
-maternal_mortality = maternal_mortality.rename(columns={'Entity' : 'Country'})
+maternal_mortality = maternal_mortality.rename(columns={'Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))' : 'Maternal Mortality Ratio'})
+maternal_mortality.info()
 
 # (5800, 4)
 
@@ -139,7 +110,7 @@ gender_wage_gap.columns
 # ['Entity', 'Code', 'Year', 'Gender wage gap (%)']
 gender_wage_gap.shape
 gender_wage_gap = gender_wage_gap.rename(columns={'Entity' : 'Country'})
-
+gender_wage_gap.info()
 # (413, 4)
 
 w_entrepreneurship.head()
@@ -189,6 +160,8 @@ merged_labor_force.isnull().sum()
 male_labor_force.isnull().sum()
 female_labor_force.isnull().sum()
 
+male_labor_force.head()
+
 #
 new_column_names = {}
 cols = [col for col in merged_labor_force.columns if col not in ["ISO3", 'Country', "HDI Rank (2021)", "Continent", "Hemisphere"]]
@@ -201,10 +174,144 @@ for column_name in cols:
 merged_labor_force.rename(columns=new_column_names, inplace=True)
 
 merged_labor_force.info()
+merged_labor_force.head()
 
 
-merged_all = pd.merge(female_labor_force, male_labor_force, on=["Year", 'Country'])
+# this is myyy branch guysszzzz!!!!
+
+#25 mart parlemanto verisi
+parliament.info()
+parliament.head()
+parliament.columns
+
+parliament["Indicator Name"]
 
 
+parliament = pd.melt(parliament, id_vars=['Country Name', 'Country Code', 'Indicator Name', 'Indicator Code'], var_name='Year', value_name='Women Seat Ratio')
+
+parliament.tail()
+parliament.info()
+
+parliament = parliament.rename(columns={'Country Name' : 'Country'})
+
+parliament["Year"] = parliament[parliament["Year"]]
+
+maternal_mortality.tail()
+maternal_mortality.nunique()
+
+adolescent_fertility_rate.head()
+adolescent_fertility_rate.nunique()
+
+human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
+
+#
+male_labor_force.columns
+male_labor_force.head()
+male_labor_force = pd.melt(male_labor_force, id_vars=['ISO3', 'Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Male Labour Force Participation Rate')
+male_labor_force.head()
+
+m_val = []
+for val in male_labor_force["Labour Force Participation Rate"].values:
+    # Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluştur
+    new_name = val.split(" ")[-1].replace("(", "").replace(")", "")
+    m_val.append(new_name)
+
+male_labor_force['Year'] = male_labor_force['Labour Force Participation Rate'].replace(male_labor_force['Labour Force Participation Rate'].tolist(), m_val)
+
+male_labor_force.sort_values(by='Country', inplace=True)
+male_labor_force.head()
+
+male_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate"], axis=1, inplace=True)
+
+#
+female_labor_force.columns
+female_labor_force = pd.melt(female_labor_force, id_vars=['ISO3', 'Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Female Labour Force Participation Rate')
+female_labor_force.head()
+
+f_val = []
+for val in female_labor_force["Labour Force Participation Rate"].values:
+    # Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluştur
+    new_name = val.split(" ")[-1].replace("(", "").replace(")", "")
+    f_val.append(new_name)
+
+female_labor_force['Year'] = female_labor_force['Labour Force Participation Rate'].replace(female_labor_force['Labour Force Participation Rate'].tolist(), f_val)
+
+female_labor_force.sort_values(by='Country', inplace=True)
+female_labor_force.head()
+
+female_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate"], axis=1, inplace=True)
 
 
+adolescent_fertility_rate.head()
+adolescent_fertility_rate["Country Name"].value_counts()
+adolescent_fertility_rate.head()
+
+adolescent_fertility_rate = pd.melt(adolescent_fertility_rate, id_vars=['Country Name', 'Country Code', 'Indicator Name', 'Indicator Code'], var_name='Year', value_name='Adolescent fertility rate')
+adolescent_fertility_rate.head()
+adolescent_fertility_rate.drop("Indicator Name", axis=1, inplace=True)
+
+gender_wage_gap.columns # target
+# ['Country', 'Code', 'Year', 'Gender wage gap (%)']
+gender_wage_gap.drop("Code", axis=1, inplace=True)
+gender_wage_gap.head()
+
+parliament.columns
+# ['Country Name', 'Country Code', 'Indicator Name', 'Indicator Code', 'Year', 'Women Seat Ratio']
+parliament = parliament.rename(columns={'Country Name' : 'Country'})
+parliament.drop(["Country Code","Indicator Name", "Indicator Code"], axis=1, inplace=True)
+parliament.head()
+
+
+maternal_mortality.columns
+# ['Country', 'Code', 'Year', 'Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))']
+maternal_mortality.drop("Code", axis=1, inplace=True)
+maternal_mortality = maternal_mortality.rename(columns={'Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))' : 'Maternal Mortality Ratio'})
+maternal_mortality.head()
+
+
+male_labor_force.columns # labor
+# ['ISO3', 'Country', 'Continent', 'Hemisphere', 'Male Labour Force Participation Rate', 'Year']
+male_labor_force.drop(["ISO3", "Continent", "Hemisphere"], axis=1, inplace=True)
+male_labor_force.head()
+
+female_labor_force.columns # labor
+# ['ISO3', 'Country', 'Continent', 'Hemisphere', 'Female Labour Force Participation Rate', 'Year']
+female_labor_force.drop(["ISO3", "Continent", "Hemisphere"], axis=1, inplace=True)
+female_labor_force.head()
+
+f_to_m_labor_force_part.columns # labor
+# ['Entity', 'Code', 'Year', 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)']
+f_to_m_labor_force_part = f_to_m_labor_force_part.rename(columns={'Entity' : 'Country', 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)' : 'Ratio of female to male labor force participation rate' })
+f_to_m_labor_force_part.drop("Code", axis=1, inplace=True)
+f_to_m_labor_force_part.head()
+
+adolescent_fertility_rate.columns
+# ['Country Name', 'Country Code', 'Indicator Code', 'Year', 'Adolescent fertility rate']
+adolescent_fertility_rate = adolescent_fertility_rate.rename(columns={'Country Name': 'Country'})
+adolescent_fertility_rate.drop(["Country Code", "Indicator Code"], axis=1, inplace=True)
+
+
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df["Year"].describe().T
+merged_df.shape # 301, 8
+
+dfs_to_concat = [gender_wage_gap, parliament, maternal_mortality, male_labor_force, female_labor_force, f_to_m_labor_force_part]
+merged_df_2 = pd.concat(dfs_to_concat, ignore_index=True)
+merged_df_2.shape # 41883, 8
+merged_df_2.head()
+
+merged_df_2.nunique()
+
+for df in dfs_to_concat:
+    print(df.Year.describe().T)
+    print("\n")
+
+female_labor_force["Year"] = female_labor_force["Year"].astype("int")
+female_labor_force.info()
+
+male_labor_force["Year"] = male_labor_force["Year"].astype("int")
+male_labor_force.info()
