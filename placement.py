@@ -308,3 +308,4 @@ rf_model = RandomForestClassifier(random_state=42).fit(X_train, y_train)
 y_pred = rf_model.predict(X_test)
 print(accuracy_score(y_pred, y_test))
 #0.7906
+
