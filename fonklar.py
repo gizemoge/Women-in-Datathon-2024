@@ -25,3 +25,7 @@ yeni_kelime = metin.split(" ")[4] + " " + metin.split(" ")[-1]
 
 # Yeni kelimeyi yazdır
 print(yeni_kelime)
+
+# Toplu sütun çağır
+for name, df in df_names.items(): # main_file'da
+    print(f"{name} setinin değişkenleri:\n {df.columns} \n")
