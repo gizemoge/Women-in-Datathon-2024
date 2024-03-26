@@ -24,6 +24,7 @@ pd.set_option('display.width', 170)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
+
 f_to_m_unpaid_care_work = pd.read_csv("datasets/1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
 w_in_top_income_groups = pd.read_csv("datasets/2- share-of-women-in-top-income-groups.csv")
 f_to_m_labor_force_part = pd.read_csv("datasets/3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi.csv")
@@ -418,7 +419,7 @@ male_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate", "Co
 # Farklı yılları temsil eden sütunları, satır yapalım:
 female_labor_force = pd.melt(female_labor_force, id_vars=['ISO3', 'Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Female Labour Force Participation Rate')
 female_labor_force.head()
-female_labor_force.tail()
+
 
 # Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluşturalım:
 f_val = []
@@ -653,10 +654,4 @@ difference = other_union.difference(gender_set)
 
 sorted_gender_set = sorted(gender_set)
 sorted_difference = sorted(difference)
-
-print("gender DataFrame'deki ülkeler (alfabetik sıralı):")
-print(sorted_gender_set)
-print("\ngender'da olmayıp diğerlerinin birleşiminde olan ülkeler (alfabetik sıralı):")
-print(sorted_difference)
-
 
