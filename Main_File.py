@@ -500,6 +500,127 @@ merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df["Year"].describe().T
 merged_df.shape # 301, 8
 
+parliament.Country.values()
+
+######## COMPLETE COUNTRY LIST
+
+countries = []
+for name, df in df_names.items():
+    if "Country" in df.columns:
+        country_of_df = df["Country"].tolist()
+        countries.extend(country_of_df)
+
+countries_unique = sorted(list(set(countries)))
+
+regions = ['Africa Eastern and Southern',
+           'Africa Western and Central',
+           'Arab World',
+           'Caribbean small states',
+           'Central Europe and the Baltics',
+           'Early-demographic dividend',
+           'East Asia & Pacific',
+           'East Asia & Pacific (IDA & IBRD countries)',
+           'East Asia & Pacific (WB)',
+           'East Asia & Pacific (excluding high income)',
+           'East Asia and Pacific (WB)',
+           'Euro area',
+           'Europe & Central Asia',
+           'Europe & Central Asia (IDA & IBRD countries)',
+           'Europe & Central Asia (WB)',
+           'Europe & Central Asia (excluding high income)',
+           'Europe and Central Asia (WB)',
+           'European Union',
+           'European Union (27)',
+           'Fragile and conflict affected situations',
+           'Heavily indebted poor countries (HIPC)',
+           'High income',
+           'High income (WB)',
+           'High-income countries',
+           'IBRD only',
+           'IDA & IBRD total',
+           'IDA blend',
+           'IDA only',
+           'IDA total',
+           'Late-demographic dividend',
+           'Latin America & Caribbean',
+           'Latin America & Caribbean (WB)',
+           'Latin America & Caribbean (excluding high income)',
+           'Latin America & the Caribbean (IDA & IBRD countries)',
+           'Latin America and Caribbean (WB)',
+           'Least developed countries: UN classification',
+           'Low & middle income',
+           'Low & middle income (WB)',
+           'Low income',
+           'Low income (WB)',
+           'Low-income countries',
+           'Lower middle income',
+           'Lower middle income (WB)',
+           'Lower-middle-income countries',
+           'Middle East & North Africa',
+           'Middle East & North Africa (IDA & IBRD countries)',
+           'Middle East & North Africa (WB)',
+           'Middle East & North Africa (excluding high income)',
+           'Middle East and North Africa (WB)',
+           'Middle income',
+           'Middle income (WB)',
+           'Middle-income countries',
+           'North America',
+           'North America (WB)',
+           'Not classified',
+           'OECD members',
+           'Other small states',
+           'Pacific island small states',
+           'Post-demographic dividend',
+           'Pre-demographic dividend',
+           'Small states',
+           'South Africa',
+           'South Asia',
+           'South Asia (IDA & IBRD)',
+           'South Asia (WB)',
+           'Sub-Saharan Africa',
+           'Sub-Saharan Africa (IDA & IBRD countries)',
+           'Sub-Saharan Africa (WB)',
+           'Sub-Saharan Africa (excluding high income)',
+           'Upper middle income',
+           'Upper middle income (WB)',
+           'Upper-middle-income countries',
+           'World']
+
+# TODO South Sudan, Kosovo vb. yeni devletleri dahil edip etmeme konusunu düşünmemiz lazım.
+repetitions = [['American Samoa', 'Samoa'],
+               ['Bahamas', 'Bahamas, The'],
+               ['Brunei', 'Brunei Darussalam'],
+               ['Congo', 'Congo, Dem. Rep.', 'Congo, Rep.', 'Democratic Republic of Congo', 'The Democratic Republic of the Congo'], # TODO Congo derken?
+               ["Cote d'Ivoire", 'Ivory Coast'],
+               ['Egypt', 'Egypt, Arab Rep.'],
+               ['East Timor', 'Timor-Leste'],
+               ['Gambia', 'Gambia, The'],
+               ['Hong Kong', 'Hong Kong SAR, China'],
+               ['Iran', 'Iran, Islamic Rep.'],
+               ['Korea', "Korea, Dem. People's Rep.", 'Korea, Rep.', 'North Korea', 'South Korea',],
+               ['Kyrgyz Republic', 'Kyrgyzstan'],
+               ['Lao', 'Lao PDR', 'Laos'],
+               ['Macao', 'Macao SAR, China'],
+               ['Macedonia', 'North Macedonia'],
+               ['Micronesia', 'Micronesia (country)', 'Micronesia, Fed. Sts.'], # TODO Micronesia bölge de olabilir, verisetine bir bakmam lazım.
+               ['Palestine','Palestine, State of', 'West Bank and Gaza'],
+               ['Puerto Rico'], # TODO ABD'ye bağlı, hem ABD hem PR sorun olur mu bilmiyorum, belki çıkarırız.
+               ['Russia', 'Russian Federation'],
+               ['Saint Kitts and Nevis', 'St. Kitts and Nevis'],
+               ['Saint Lucia', 'St. Lucia'],
+               ['Saint Vincent and the Grenadines', 'St. Vincent and the Grenadines'],
+               ['Slovak Republic', 'Slovakia'],
+               ['Sudan', 'South Sudan'],
+               ['Syria', 'Syrian Arab Republic'],
+               ['Turkey', 'Turkiye'],
+               ['UK', 'United Kingdom'],
+               ['Venezuela', 'Venezuela, RB'],
+               ['Viet Nam', 'Vietnam'],
+               ['United States Virgin Islands', 'Virgin Islands (U.S.)'],
+               ['Yemen', 'Yemen, Rep.']]
+
+########
+
 # Merge'e alternatif concat çalıştık.
 dfs_to_concat = [gender_wage_gap, parliament, maternal_mortality, male_labor_force, female_labor_force, f_to_m_labor_force_part]
 merged_df_2 = pd.concat(dfs_to_concat, ignore_index=True)
@@ -537,3 +658,5 @@ print("gender DataFrame'deki ülkeler (alfabetik sıralı):")
 print(sorted_gender_set)
 print("\ngender'da olmayıp diğerlerinin birleşiminde olan ülkeler (alfabetik sıralı):")
 print(sorted_difference)
+
+
