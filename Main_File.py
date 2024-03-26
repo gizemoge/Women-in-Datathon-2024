@@ -24,7 +24,6 @@ pd.set_option('display.width', 170)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-
 f_to_m_unpaid_care_work = pd.read_csv("datasets/1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
 w_in_top_income_groups = pd.read_csv("datasets/2- share-of-women-in-top-income-groups.csv")
 f_to_m_labor_force_part = pd.read_csv("datasets/3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi.csv")
@@ -312,9 +311,7 @@ placement.info() # veritiplerinde sıkıntı yok.
 # Verinin özünü anlama ve derinlemesine analiz etme yeteneği büyük önem taşımaktadır.
 # Veri setinin karmaşıklığını anlayarak, içindeki değerli bilgileri keşfetmeye odaklanmanız önemlidir.
 
-# TODO NEDEN ENTITY DEDİĞİNİ ANLADIM! ÇÜNKÜ SADECE ÜLKELER DEĞİL, ÜLKE DIŞI YAPILAR, MESELA MENA GİBİ BÖLGELER DE VAR!
 # Başka isimlerle verilen ülke değişkeni ismini Country olarak standardize edelim:
-
 cols_to_change = ["Entity", "Country Name"]
 for name, df in df_names.items():
     matched_cols = [col for col in cols_to_change if col in df.columns]
@@ -384,16 +381,20 @@ maternal_mortality.info()
 # Analizlerinizde çeşitli teknikler kullanarak veri setini keşfetmeniz ve bu çalışmayı yorumlamanız beklenmektedir.
 # Bu teknikler arasında görselleştirme, istatistiksel analiz, kümeleme ve tahminleme gibi yöntemler bulunmaktadır.
 
+gender_wage_gap.columns # TODO target
 
-# Farklı yılları temsil eden sütunları, satır yapalım: # TODO üstte "country name"="country" oldu, diğer üçü de uçtu. Onayınız olmadan buraya dokunmak istemedim, ne yapalım?
+# Farklı yılları temsil eden sütunları, satır yapalım:
 parliament = pd.melt(parliament, id_vars=['Country'], var_name='Year', value_name='Women Seat Ratio')
 # Kontrol edelim:
 parliament.tail()
 parliament.info()
-
-# TODO bunu çalıştıramadım
+# Year değişkenini biz string'den yarattığımız için tipini int yapmalıyız:
 parliament["Year"] = parliament["Year"].astype("int")
 
+# Farklı yılları temsil eden sütunları, satır yapalım:
+adolescent_fertility_rate = pd.melt(adolescent_fertility_rate, id_vars=['Country'], var_name='Year', value_name='Adolescent fertility rate')
+adolescent_fertility_rate.head()
+adolescent_fertility_rate["Year"] = adolescent_fertility_rate["Year"].astype("int")
 
 
 # Farklı yılları temsil eden sütunları, satır yapalım:
@@ -407,6 +408,7 @@ for val in male_labor_force["Labour Force Participation Rate"].values:
     m_val.append(new_name)
 
 male_labor_force['Year'] = male_labor_force['Labour Force Participation Rate'].replace(male_labor_force['Labour Force Participation Rate'].tolist(), m_val)
+male_labor_force["Year"] = male_labor_force["Year"].astype("int")
 
 # Verisetini şu anki gibi yıla göre değil, ülkelere göre alfabetik sıralayalım:
 male_labor_force.sort_values(by='Country', inplace=True)
@@ -417,9 +419,9 @@ male_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate", "Co
 
 
 # Farklı yılları temsil eden sütunları, satır yapalım:
-female_labor_force = pd.melt(female_labor_force, id_vars=['ISO3', 'Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Female Labour Force Participation Rate')
+female_labor_force = pd.melt(female_labor_force, id_vars=['Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Female Labour Force Participation Rate')
 female_labor_force.head()
-
+female_labor_force.tail()
 
 # Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluşturalım:
 f_val = []
@@ -428,6 +430,7 @@ for val in female_labor_force["Labour Force Participation Rate"].values:
     f_val.append(new_name)
 
 female_labor_force['Year'] = female_labor_force['Labour Force Participation Rate'].replace(female_labor_force['Labour Force Participation Rate'].tolist(), f_val)
+female_labor_force["Year"] = female_labor_force["Year"].astype("int")
 
 # Verisetini şu anki gibi yıla göre değil, ülkelere göre alfabetik sıralayalım:
 female_labor_force.sort_values(by='Country', inplace=True)
@@ -436,83 +439,35 @@ female_labor_force.head()
 # Fazla değişkenleri silelim:
 female_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate", "Continent", "Hemisphere"], axis=1, inplace=True)
 
+
+
+########################
 # TODO male ve female labor_force verisetlerini aynı işlemlerden geçiriyoruz. Daha şık olması için bu ikisini liste + fonksiyon + for_döngüsü ile birleştirelim.
-
 # Şimdi birleştirelim:
-
 # Cinsiyetlerin iş gücüne katılımını gösteren iki ayrı verisetini birleştirerek yeni veriseti oluşturalım:
 merged_labor_force = pd.merge(female_labor_force, male_labor_force, on=["Country"])
 df_names.update({"merged_labor_force": merged_labor_force})
 "merged_labor_force" in df_names # True
 
 
-#####
-
-# TODO buradaki country ve indicator ile ilgili yukarıda derleme yapıldı. Ama belki de tek tek gitmeyi tercih ederiz.
-adolescent_fertility_rate.head()
-adolescent_fertility_rate["Country Name"].value_counts()
-adolescent_fertility_rate = pd.melt(adolescent_fertility_rate, id_vars=['Country Name', 'Country Code', 'Indicator Name', 'Indicator Code'], var_name='Year', value_name='Adolescent fertility rate')
-adolescent_fertility_rate.head()
-adolescent_fertility_rate.drop(columns=["Indicator Name", "Indicator Code"], axis=1, inplace=True)
-
-gender_wage_gap.columns # TODO target
-
-parliament.columns
-# ['Country Name', 'Country Code', 'Indicator Name', 'Indicator Code', 'Year', 'Women Seat Ratio']
-parliament = parliament.rename(columns={'Country Name' : 'Country'})
-parliament.drop(["Indicator Name", "Indicator Code"], axis=1, inplace=True)
-parliament.head()
-
-maternal_mortality.columns
-# ['Country', 'Code', 'Year', 'Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))']
-maternal_mortality.drop("Code", axis=1, inplace=True)
-maternal_mortality = maternal_mortality.rename(columns={'Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))' : 'Maternal Mortality Ratio'})
-maternal_mortality.head()
-
-male_labor_force.columns # labor
-# ['ISO3', 'Country', 'Continent', 'Hemisphere', 'Male Labour Force Participation Rate', 'Year']
-male_labor_force.drop(["ISO3", "Continent", "Hemisphere"], axis=1, inplace=True)
-male_labor_force.head()
-
-female_labor_force.columns # labor
-# ['ISO3', 'Country', 'Continent', 'Hemisphere', 'Female Labour Force Participation Rate', 'Year']
-female_labor_force.drop(["ISO3", "Continent", "Hemisphere"], axis=1, inplace=True)
-female_labor_force.head()
-
-f_to_m_labor_force_part.columns # labor
-# ['Entity', 'Code', 'Year', 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)']
-f_to_m_labor_force_part = f_to_m_labor_force_part.rename(columns={'Entity' : 'Country', 'Ratio of female to male labor force participation rate (%) (modeled ILO estimate)' : 'Ratio of female to male labor force participation rate' })
-f_to_m_labor_force_part.drop("Code", axis=1, inplace=True)
-f_to_m_labor_force_part.head()
-
-adolescent_fertility_rate.columns
-# ['Country Name', 'Country Code', 'Indicator Code', 'Year', 'Adolescent fertility rate']
-adolescent_fertility_rate = adolescent_fertility_rate.rename(columns={'Country Name': 'Country'})
-adolescent_fertility_rate.drop(["Country Code", "Indicator Code"], axis=1, inplace=True)
+# COUNTRY HESAPLARI
 
 # TODO Biz burada bir sıkıntı var sandık (merge, aldığı iki verisetinde de ortak olmayanları sildiği için, merge sıralamasının veri kaybetmemek içni önemli olduğunu düşündük) ama her halükarda en küçükle en büyük veriseti çarpışacağı için aslında önemli değil.
-# TODO Merge kullanacaksak for döngüsü ile yaparsak daha şık olur.
-# TODO Tüm bunların ülke kolonlarını tek liste yap, alfabetik sırala, temizle.
-merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
-merged_df["Year"].describe().T
-merged_df.shape # 301, 8
-
-parliament.Country.values()
-
-######## COMPLETE COUNTRY LIST
-
 countries = []
 for name, df in df_names.items():
     if "Country" in df.columns:
-        country_of_df = df["Country"].tolist()
-        countries.extend(country_of_df)
+        country_vals_list = df["Country"].tolist()
+        countries.extend(country_vals_list)
 
+# Her bir ülkeye ait kaç gözlemimiz olduğuna bakalım:
+for country in set(countries):
+    tekrar_sayisi = countries.count(country)
+    print(f"{country}: {tekrar_sayisi}")
+
+# Unique ülkeleri alıp alfabetik sıralayalım:
 countries_unique = sorted(list(set(countries)))
 
+# Bu setin içerisinde aslında ülke olmayan bölge isimlerini ayıralım:
 regions = ['Africa Eastern and Southern',
            'Africa Western and Central',
            'Arab World',
@@ -588,41 +543,112 @@ regions = ['Africa Eastern and Southern',
            'World']
 
 # TODO South Sudan, Kosovo vb. yeni devletleri dahil edip etmeme konusunu düşünmemiz lazım.
-repetitions = [['American Samoa', 'Samoa'],
-               ['Bahamas', 'Bahamas, The'],
-               ['Brunei', 'Brunei Darussalam'],
-               ['Congo', 'Congo, Dem. Rep.', 'Congo, Rep.', 'Democratic Republic of Congo', 'The Democratic Republic of the Congo'], # TODO Congo derken?
-               ["Cote d'Ivoire", 'Ivory Coast'],
-               ['Egypt', 'Egypt, Arab Rep.'],
-               ['East Timor', 'Timor-Leste'],
-               ['Gambia', 'Gambia, The'],
-               ['Hong Kong', 'Hong Kong SAR, China'],
-               ['Iran', 'Iran, Islamic Rep.'],
-               ['Korea', "Korea, Dem. People's Rep.", 'Korea, Rep.', 'North Korea', 'South Korea',],
-               ['Kyrgyz Republic', 'Kyrgyzstan'],
-               ['Lao', 'Lao PDR', 'Laos'],
-               ['Macao', 'Macao SAR, China'],
-               ['Macedonia', 'North Macedonia'],
-               ['Micronesia', 'Micronesia (country)', 'Micronesia, Fed. Sts.'], # TODO Micronesia bölge de olabilir, verisetine bir bakmam lazım.
-               ['Palestine','Palestine, State of', 'West Bank and Gaza'],
-               ['Puerto Rico'], # TODO ABD'ye bağlı, hem ABD hem PR sorun olur mu bilmiyorum, belki çıkarırız.
-               ['Russia', 'Russian Federation'],
-               ['Saint Kitts and Nevis', 'St. Kitts and Nevis'],
-               ['Saint Lucia', 'St. Lucia'],
-               ['Saint Vincent and the Grenadines', 'St. Vincent and the Grenadines'],
-               ['Slovak Republic', 'Slovakia'],
-               ['Sudan', 'South Sudan'],
-               ['Syria', 'Syrian Arab Republic'],
-               ['Turkey', 'Turkiye'],
-               ['UK', 'United Kingdom'],
-               ['Venezuela', 'Venezuela, RB'],
-               ['Viet Nam', 'Vietnam'],
-               ['United States Virgin Islands', 'Virgin Islands (U.S.)'],
-               ['Yemen', 'Yemen, Rep.']]
+# Şimdi de yazım farklılıklarını ayıralım:
+diffs = [{'Samoa': 'American Samoa'},
+         {'Bahamas, The': 'Bahamas'},
+         {'Brunei Darussalam': 'Brunei'},
+         {"Cote d'Ivoire": 'Ivory Coast'},
+         {'Egypt, Arab Rep.': 'Egypt'},
+         {'East Timor', 'Timor-Leste'},
+         {'Gambia, The': 'Gambia'},
+         {'Hong Kong SAR, China': 'Hong Kong'},
+         {'Iran, Islamic Rep.', 'Iran'},
+         {'Kyrgyz Republic': 'Kyrgyzstan'},
+         {'Macao SAR, China': 'Macao'},
+         {'Macedonia': 'North Macedonia'},
+         # ['Puerto Rico'], # TODO ABD'ye bağlı, hem ABD hem PR sorun olur mu bilmiyorum, belki çıkarırız.
+         {'Russian Federation': 'Russia'},
+         {'Saint Kitts and Nevis': 'St. Kitts and Nevis'},
+         {'Saint Lucia': 'St. Lucia'},
+         {'Saint Vincent and the Grenadines': 'St. Vincent and the Grenadines'},
+         {'Slovak Republic': 'Slovakia'},
+         # ['Sudan', 'South Sudan'],
+         {'Syrian Arab Republic': 'Syria'},
+         {'Turkey': 'Turkiye'},
+         {'UK': 'United Kingdom'},
+         {'Venezuela, RB': 'Venezuela'},
+         {'Viet Nam': 'Vietnam'},
+         {'United States Virgin Islands': 'Virgin Islands (U.S.)'},
+         {'Yemen, Rep.': 'Yemen'}]
+
+# Farklı yazımlara sahip benzer isimleri olan ülkeleri ayıralım sadeleştirme için kaynak verisetlerinden kontrol edebilelim:
+confusions = ['Congo', 'Congo, Dem. Rep.', 'Congo, Rep.', 'Democratic Republic of Congo','The Democratic Republic of the Congo',  # TODO Congo derken?
+              'Korea', "Korea, Dem. People's Rep.", 'Korea, Rep.', 'North Korea', 'South Korea',
+              'Lao', 'Lao PDR', 'Laos',
+              'Micronesia', 'Micronesia (country)', 'Micronesia, Fed. Sts.',  # TODO Micronesia bölge de olabilir, verisetine bir bakmam lazım.
+              'Palestine', 'Palestine, State of', 'West Bank and Gaza']
+len(confusions) # 19
+
+"""
+# Bu karışık yazımların hangi verisetlerinden geldiğini bulalım:
+for confused_name in confusions:
+    print(f"'{confused_name}':")
+    df_with_confusion = []
+    for name, df in df_names.items():
+        if "Country" in df.columns:
+            if confused_name in df["Country"].values:
+                df_with_confusion.append(name)
+            #else:
+                #print(f"- not in: '{name}'")
+        #else:
+            # print(f"No 'Country' column applicable in: '{name}'")
+    print(df_with_confusion)
+    print("\n")
+"""
+# Hangi verisetinde hangi karışık yazımlar var bakalım ve her veriseti için kaydedelim:
+confusion_df_dict = {}
+for name, df in df_names.items():
+    print(f"'{name}':")
+    confusions_in_df = []
+    if "Country" in df.columns:
+        for confused_name in confusions:
+            if confused_name in df["Country"].values:
+                confusions_in_df.append(confused_name)
+        print(confusions_in_df)
+        confusion_df_dict.update({ name : confusions_in_df})
+        #globals()[f"confusions_in_{name}"] = confusions_in_df
+    else:
+        print("[]")
+    print("\n")
+
+# Temizleyelim.
+confusion_sorted = {'Congo': 'Congo, Rep.',
+                   'Democratic Republic of Congo': 'Congo, Dem. Rep.',
+                   'The Democratic Republic of the Congo': 'Congo, Dem. Rep.',
+                   'Korea': 'South Korea',
+                   'Korea, Rep.': 'South Korea',
+                   "Korea, Dem. People's Rep.": 'North Korea',
+                   'Lao': 'Laos',
+                   'Lao PDR': 'Laos',
+                   'Micronesia (country)': 'Micronesia',
+                   'Micronesia, Fed. Sts.': 'Micronesia',
+                   'Palestine, State of': 'Palestine',
+                   'West Bank and Gaza': 'Palestine'}
+
+for name, df in df_names.items():
+    if "Country" in df.columns:
+        df["Country"] = df["Country"].replace(confusion_sorted)
+
+# Kontrol edelim:
+confusion_df_dict
+
+
+# MERGE VAKTİ
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+
+merged_df["Year"].describe().T # 1990-2016
+merged_df.shape # 301, 8
+
+
+
+
 
 ########
-
-# Merge'e alternatif concat çalıştık.
+# Merge'e alternatif concat??.
 dfs_to_concat = [gender_wage_gap, parliament, maternal_mortality, male_labor_force, female_labor_force, f_to_m_labor_force_part]
 merged_df_2 = pd.concat(dfs_to_concat, ignore_index=True)
 merged_df_2.shape # 41883, 8
@@ -633,25 +659,3 @@ merged_df_2.nunique()
 for df in dfs_to_concat:
     print(df.Year.describe().T)
     print("\n")
-
-# Bu verisetlerindeki Year değişkenini biz metinden split ile yarattığımız dtype'ı farklı olmuş.
-# TODO split olmasa da aynı melt işlemini başka verisetlerine de uyguladık, kontrol et.
-female_labor_force["Year"] = female_labor_force["Year"].astype("int")
-female_labor_force.info()
-
-male_labor_force["Year"] = male_labor_force["Year"].astype("int")
-male_labor_force.info()
-
-
-
-# Burada merge'deki sıkıntıyı gidermek için, target'taki ülkeler arasında olmayan ülkeleri yakalayıp silmek istiyoruz (Ama işte yukarıdaki nedenden dolayı gereksiz gibi).
-gender_set = set(gender_wage_gap['Country'])
-
-other_union = set().union(*[set(df['Country']) for df in dfs_to_concat if not df.equals(gender_wage_gap)])
-
-# A_set'te olmayıp diğerlerinin birleşiminde olan ülkelerin farkını hesaplayalım
-difference = other_union.difference(gender_set)
-
-sorted_gender_set = sorted(gender_set)
-sorted_difference = sorted(difference)
-
