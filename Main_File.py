@@ -36,7 +36,6 @@ placement = pd.read_csv("datasets/Placement.csv")
 # 1 ve 4, 7 ve 11 excel'ler aynı
 parliament = pd.read_excel("datasets/Parliament.xlsx")
 adolescent_fertility_rate = pd.read_excel("datasets/Adolescent_Fertility_Rate.xlsx")
-human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
 
 # Veriseti isimlerini çıktı alabilmek için sözlük yaratalım:
 df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
@@ -49,8 +48,7 @@ df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
             "female_labor_force": female_labor_force,
             "placement": placement,
             "parliament": parliament,
-            "adolescent_fertility_rate": adolescent_fertility_rate,
-            "human_dev_indices": human_dev_indices}
+            "adolescent_fertility_rate": adolescent_fertility_rate}
 
 
 ##############################################
@@ -626,16 +624,16 @@ confusion_sorted = {'Congo': 'Congo, Rep.',
                    'Micronesia (country)': 'Micronesia',
                    'Micronesia, Fed. Sts.': 'Micronesia'}
 
-for name, df in df_names.items():
-    if "Country" in df.columns:
-        df["Country"] = df["Country"].replace(confusion_sorted)
-        df["Country"] = df["Country"].replace(diffs)
-
-df_list = []
-df_list = df_names.values()
-type(df_names)
-for value in df_names.values.columns:
-    value["Country"] = value["Country"].replace(confusion_sorted)
+# for name, df in df_names.items():
+#     if "Country" in df.columns:
+#         df["Country"] = df["Country"].replace(confusion_sorted)
+#         df["Country"] = df["Country"].replace(diffs)
+#
+# df_list = []
+# df_list = df_names.values()
+# type(df_names)
+# for value in df_names.values.columns:
+#     value["Country"] = value["Country"].replace(confusion_sorted)
 
 
 # FOR ÇALIŞMAYINCA PES EDİP MANUEL YAZDIK
@@ -683,23 +681,36 @@ merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
 
 merged_df["Year"].describe().T # 1990-2016
-merged_df.shape # 324, 8
+merged_df.shape # 324, 9
 
 merged_df.head()
 
+merged_df.isnull().sum() # Women Seat Ratio'da 14 adet null değer var
+merged_df.loc[merged_df["Women Seat Ratio"].isnull()]
+merged_df.loc[merged_df["Country"] == "Chile"]
+merged_df.loc[merged_df["Country"] == "Mexico"]
+merged_df.loc[merged_df["Country"] == "Argentina"]
+
+merged_df[merged_df["Country"] == "Chile"].fillna(merged_df["Country"] == ["Chile"].min())
+
+merged_df['Women Seat Ratio'] = merged_df['Women Seat Ratio'].fillna(merged_df.groupby('Country')['Women Seat Ratio'].transform('min'))
 
 
-########
-# Merge'e alternatif concat??.
-dfs_to_concat = [gender_wage_gap, parliament, maternal_mortality, male_labor_force, female_labor_force, f_to_m_labor_force_part]
-merged_df_2 = pd.concat(dfs_to_concat, ignore_index=True)
-merged_df_2.shape # 41883, 8
+parliament[parliament["Country"] == "Chile"]
+
+[col for col in df.columns if merged_df.loc[merged_df["Women Seat Ratio"].isnull()]]
+
+# Year olmadan merge edip bakmak istiyoruz:
+merged_df_2 = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"], how='outer')
+merged_df_2 = pd.merge(merged_df_2, maternal_mortality, on=['Country', "Year"], how='outer')
+merged_df_2 = pd.merge(merged_df_2, male_labor_force, on=['Country', "Year"], how='outer')
+merged_df_2 = pd.merge(merged_df_2, female_labor_force, on=['Country', "Year"],  how='outer')
+merged_df_2 = pd.merge(merged_df_2, f_to_m_labor_force_part, on=['Country', "Year"],  how='outer')
+merged_df_2 = pd.merge(merged_df_2, adolescent_fertility_rate, on=['Country', "Year"],  how='outer')
+
+merged_df_2["Year"].describe().T # 1990-2016
+merged_df_2.shape 
 merged_df_2.head()
-
-merged_df_2.nunique()
-
-for df in dfs_to_concat:
-    print(df.Year.describe().T)
-    print("\n")
