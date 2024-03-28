@@ -38,6 +38,7 @@ parliament = pd.read_excel("datasets/Parliament.xlsx")
 adolescent_fertility_rate = pd.read_excel("datasets/Adolescent_Fertility_Rate.xlsx")
 human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
 
+
 # Veriseti isimlerini çıktı alabilmek için sözlük yaratalım:
 df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
             "w_in_top_income_groups": w_in_top_income_groups,
@@ -669,8 +670,7 @@ parliament["Country"] = parliament["Country"].replace(diffs)
 
 adolescent_fertility_rate["Country"] = adolescent_fertility_rate["Country"].replace(confusion_sorted)
 adolescent_fertility_rate["Country"] = adolescent_fertility_rate["Country"].replace(diffs)
-merged_df.head(100)
-merged_df.columns
+
 
 # Kontrol edelim:
 sorted(parliament["Country"].unique())
@@ -807,7 +807,9 @@ merged_df_copy.head()
 merged_df_2014 = merged_df_copy[merged_df_copy["Year"] == 2014]
 merged_df_2014.reset_index()
 merged_df_2014.isnull().sum()
-# null değer yok
+
+
+
 
 # multiple linear regression
 X = merged_df_2014.drop(['Gender wage gap (%)', "Country"], axis=1)
@@ -970,6 +972,7 @@ np.sqrt(mean_squared_error(y_test, y_pred))
 reg_model.score(X_test, y_test)
 # 0.89                      #-0.36022491213410235
 
+
 #random forest
 model = RandomForestRegressor(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
@@ -977,18 +980,80 @@ predictions = model.predict(X_test)
 
 mse = mean_squared_error(y_test, predictions)
 mse
-#0.42263542456484143
+# 0.4428928913486209
+
+model.score(X_test, y_test)
+# -0.13
+
+# accuracy'lere de bakmak gerek
+
+# gizem -----------------------------------
+merged_df_2014 = merged_df_2014.drop(49)
+
+merged_df_2014.isnull().sum()
+
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+
+X = merged_df_2014.drop(['Gender wage gap (%)', "Country"], axis=1)
+y = merged_df_2014[["Gender wage gap (%)"]]
+
+# Veri setini eğitim ve test kümelerine ayır
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# SVR modelini oluştur ve eğit
+svr_model = SVR(kernel='linear')  # Lineer çekirdek kullanarak bir SVR modeli oluştur
+svr_model.fit(X_train, y_train)   # Modeli eğit
+
+# Test veri kümesi üzerinde tahmin yap
+y_pred = svr_model.predict(X_test)
+
+# Model performansını değerlendir
+mse = mean_squared_error(y_test, y_pred)
+print("SVR ortalama karesel hata (MSE):", mse)
+#38.80809525628783
+
+svr_model.score(X_test, y_test)
+# 0.4321485835554504
+
+r2 = r2_score(y_test, y_pred)
+
+# accuracy
+
+# Grafik çizimi
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test, y_pred, color='blue', label='Hata', s=100, alpha=0.5)
+plt.axhline(0, color='red', linestyle='--', linewidth=2)
+plt.xlabel('Gerçek Değerler', fontsize=14)
+plt.ylabel('Hatalar (Gerçek - Tahmin)', fontsize=14)
+plt.title('MSE: {:.2f}'.format(mse), fontsize=16)
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+# Grafik çizimi
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test, y_pred, color='blue', label='Gerçek vs Tahmin')
+plt.plot(y_test, y_pred, color='red', linestyle='--', label='Doğru Tahmin')
+plt.title(f'SVR Modeli: Gerçek vs Tahmin (MSE={mse:.2f})')
+plt.xlabel('Gerçek Değerler')
+plt.ylabel('Tahmin Değerleri')
+plt.legend()
+plt.grid(True)
+plt.show()
 
 
 
 
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
 
-
-
-
-
-
-
+merged_df
 
 
 
