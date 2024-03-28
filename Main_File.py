@@ -703,7 +703,7 @@ parliament[parliament["Country"] == "Chile"]
 
 [col for col in df.columns if merged_df.loc[merged_df["Women Seat Ratio"].isnull()]]
 
-# Year olmadan merge edip bakmak istiyoruz:
+# Outer merge edip (ki bu da concat demekmiş) bakmak istiyoruz:
 merged_df_2 = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"], how='outer')
 merged_df_2 = pd.merge(merged_df_2, maternal_mortality, on=['Country', "Year"], how='outer')
 merged_df_2 = pd.merge(merged_df_2, male_labor_force, on=['Country', "Year"], how='outer')
@@ -711,6 +711,269 @@ merged_df_2 = pd.merge(merged_df_2, female_labor_force, on=['Country', "Year"], 
 merged_df_2 = pd.merge(merged_df_2, f_to_m_labor_force_part, on=['Country', "Year"],  how='outer')
 merged_df_2 = pd.merge(merged_df_2, adolescent_fertility_rate, on=['Country', "Year"],  how='outer')
 
-merged_df_2["Year"].describe().T # 1990-2016
-merged_df_2.shape 
+merged_df_2["Year"].describe().T # 1751-2022
+merged_df_2.shape # (41883, 8)
 merged_df_2.head()
+
+# Target'ımız senesine uysun diye left merge etmek istiyorum:
+merged_df_3 = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"], how='left')
+merged_df_3 = pd.merge(merged_df_3, maternal_mortality, on=['Country', "Year"], how='left')
+merged_df_3 = pd.merge(merged_df_3, male_labor_force, on=['Country', "Year"], how='left')
+merged_df_3 = pd.merge(merged_df_3, female_labor_force, on=['Country', "Year"],  how='left')
+merged_df_3 = pd.merge(merged_df_3, f_to_m_labor_force_part, on=['Country', "Year"],  how='left')
+merged_df_3 = pd.merge(merged_df_3, adolescent_fertility_rate, on=['Country', "Year"],  how='left')
+
+merged_df_3["Year"].describe().T # 1981-2016
+merged_df_3.shape # (413, 9)
+merged_df_3.head()
+male_labor_force["Year"].describe().T # 1990-2021
+parliament["Year"].describe().T
+parliament.loc[parliament["Year"] < 1997]
+parliament.head()
+
+
+# Parliament'ı kırparak tekrar inner merge atalım
+parliament = parliament.loc[parliament["Year"] > 1996]
+parliament.head()
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
+
+merged_df["Year"].describe().T # 1998-2016
+merged_df.shape # (295, 9)
+
+sorted(male_labor_force["Year"].unique())
+male_labor_force["Year"].nunique() # 32
+adolescent_fertility_rate["Year"].value_counts()
+merged_df.loc('Country', "Year")
+
+grouped = merged_df.groupby(["Country","Year"]).apply(lambda x: x.reset_index(drop=True))
+
+for name, df in df_names.items():
+    df.groupby(["Country", "Year"]).apply(lambda x: x.reset_index(drop=True))
+
+
+
+merged_df.columns
+merged_df_3.loc[merged_df_3["Country"] == "United Kingdom"]
+gender_wage_gap["Entity"].value_counts()
+gender_wage_gap["Year"].value_counts()
+maternal_mortality["Year"].sort_values().value_counts()
+
+merged_df["Year"].value_counts()
+
+"""
+years_array = np.arange(1970, 2024)
+for year in years_array:
+    for name, df in df_names.items():
+        if "Year" in df.columns:
+            if year not in df["Year"].values:
+                # Create a new row with NaN values for other columns
+                new_row = pd.DataFrame([[np.nan] * len(df.columns)], columns=df.columns)
+                new_row['Year'] = year  # Set the year value
+                # Append the new row to the DataFrame
+                df = pd.concat([df, new_row], ignore_index=True)
+                # Update the original DataFrame in df_names dictionary
+                df_names[name] = df
+"""
+gender_wage_gap["Entity"].value_counts()
+
+
+#Eda-------------------------------------------------------------------------
+merged_df_copy = merged_df.copy()
+
+merged_df_copy.head()
+
+merged_df_2014 = merged_df_copy[merged_df_copy["Year"] == 2014]
+merged_df_2014.reset_index()
+merged_df_2014.isnull().sum()
+# null değer yok
+
+# multiple linear regression
+X = merged_df_2014.drop(['Gender wage gap (%)', "Country"], axis=1)
+y = merged_df_2014[["Gender wage gap (%)"]]
+
+##########################
+# Model
+##########################
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
+
+y_test.shape
+y_train.shape
+
+reg_model = LinearRegression().fit(X_train, y_train)
+
+# sabit (b - bias)
+reg_model.intercept_
+# 111.41544466
+
+# coefficients (w - weights)
+reg_model.coef_
+# ([[ 0.        , -0.10085855,  0.0755021 , -1.916704  ,  2.37494941,
+#         -1.17009989, -0.05977133]])
+
+
+
+
+
+
+merged_df_2014.columns
+
+
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = reg_model.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+#5.757216090869661
+
+
+# Train RKARE
+reg_model.score(X_train, y_train)
+# 0.5299800183820808
+
+# Test RMSE
+y_pred = reg_model.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 1.41
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+reg_model.score(X_test, y_test)
+# 0.89
+
+
+# 2- Cross validation yöntemi
+# 10 Katlı CV RMSE
+np.mean(np.sqrt(-cross_val_score(reg_model,
+                                 X,
+                                 y,
+                                 cv=10,
+                                 scoring="neg_mean_squared_error")))
+# 1.69
+
+
+# 5 Katlı CV RMSE
+np.mean(np.sqrt(-cross_val_score(reg_model,
+                                 X,
+                                 y,
+                                 cv=5,
+                                 scoring="neg_mean_squared_error")))
+# 1.71
+
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(merged_df_2014[['Gender wage gap (%)', 'Women Seat Ratio', 'Maternal Mortality Ratio', 'Male Labour Force Participation Rate',
+       'Female Labour Force Participation Rate', 'F/M Labor Force Part', 'Adolescent fertility rate']].corr(), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Korelasyon Matrisi')
+plt.show()
+
+merged_df_2014.head()
+
+
+def outlier_thresholds(dataframe, col_name, q1=0.05, q3=0.95):
+    quartile1 = dataframe[col_name].quantile(q1)
+    quartile3 = dataframe[col_name].quantile(q3)
+    interquantile_range = quartile3 - quartile1
+    up_limit = quartile3 + 1.5 * interquantile_range
+    low_limit = quartile1 - 1.5 * interquantile_range
+    print(f"{col_name} sütunu için alt ve üst limit değerleri: ({low_limit}, {up_limit})")
+    return low_limit, up_limit
+
+num_cols = [col for col in merged_df_2014.columns if col not in ["Country", "Year"]]
+for col in num_cols:
+    outlier_thresholds(merged_df_2014, col)
+
+def grab_outliers(dataframe, col_name, index=False):
+    low, up = outlier_thresholds(dataframe, col_name)
+    if dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].shape[0] > 10:
+        print(dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].head())
+    else:
+        print(dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))])
+
+    if index:
+        outlier_index = dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].index
+        return outlier_index
+
+for col in num_cols:
+    grab_outliers(merged_df_2014, col)
+# outlier tespit edilmedi
+
+
+# standartlaştırma
+rs = RobustScaler()
+merged_df_2014[num_cols] = rs.fit_transform(merged_df_2014[num_cols])
+
+merged_df_2014.head()
+
+#tekrar model
+X = merged_df_2014.drop(['Gender wage gap (%)', "Country"], axis=1)
+y = merged_df_2014[["Gender wage gap (%)"]]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
+reg_model = LinearRegression().fit(X_train, y_train)
+
+# sabit (b - bias)
+reg_model.intercept_
+# 111.41544466
+
+# coefficients (w - weights)
+reg_model.coef_
+# ([[ 0.        , -0.10085855,  0.0755021 , -1.916704  ,  2.37494941,
+#         -1.17009989, -0.05977133]])
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = reg_model.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+#5.757216090869661    # 0.5865732135374082
+
+
+# Train RKARE
+reg_model.score(X_train, y_train)
+# 0.5299800183820808   #0.5299800183820806
+
+# Test RMSE
+y_pred = reg_model.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 1.41                                  # 0.7217801148772511
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+reg_model.score(X_test, y_test)
+# 0.89                      #-0.36022491213410235
+
+#random forest
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+predictions = model.predict(X_test)
+
+mse = mean_squared_error(y_test, predictions)
+mse
+#0.42263542456484143
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
