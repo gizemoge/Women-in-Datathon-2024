@@ -36,6 +36,7 @@ placement = pd.read_csv("datasets/Placement.csv")
 # 1 ve 4, 7 ve 11 excel'ler aynı
 parliament = pd.read_excel("datasets/Parliament.xlsx")
 adolescent_fertility_rate = pd.read_excel("datasets/Adolescent_Fertility_Rate.xlsx")
+human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
 
 # Veriseti isimlerini çıktı alabilmek için sözlük yaratalım:
 df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
@@ -682,6 +683,22 @@ merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
+
+# gdi için gerder_wage_gap olmadan birleştirme
+merged_df_gdi = pd.merge(parliament, maternal_mortality, on=['Country', "Year"])
+merged_df_gdi = pd.merge(merged_df_gdi, male_labor_force, on=['Country', "Year"])
+merged_df_gdi = pd.merge(merged_df_gdi, female_labor_force, on=['Country', "Year"])
+merged_df_gdi = pd.merge(merged_df_gdi, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df_gdi = pd.merge(merged_df_gdi, adolescent_fertility_rate, on=['Country', "Year"])
+# bunu excel'e alıyorum
+merged_df_gdi.to_excel("output.xlsx", index=False)
+
+unique_countries = merged_df_gdi["Country"].unique()
+unique_country_count = len(unique_countries)
+# 178 adet ülke var unique
+
+
+
 
 merged_df["Year"].describe().T # 1990-2016
 merged_df.shape # 324, 9
