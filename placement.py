@@ -298,14 +298,58 @@ cv_results['test_f1'].mean()
 cv_results['test_roc_auc'].mean()
 # AUC: 0.9221
 
-#randomForest
-y = placement["status"]
-X = placement.drop(["status"], axis=1)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+# #randomForest
+# y = placement["status"]
+# X = placement.drop(["status"], axis=1)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+#
+# from sklearn.ensemble import RandomForestClassifier
+# rf_model = RandomForestClassifier(random_state=42).fit(X_train, y_train)
+# y_pred = rf_model.predict(X_test)
+# print(accuracy_score(y_pred, y_test))
+# #0.7906
 
-from sklearn.ensemble import RandomForestClassifier
-rf_model = RandomForestClassifier(random_state=42).fit(X_train, y_train)
-y_pred = rf_model.predict(X_test)
-print(accuracy_score(y_pred, y_test))
-#0.7906
 
+
+# Modelinizin katsayılarını alın
+coefficients = log_model.coef_[0]
+
+# Özellik adlarını alın
+feature_names = X.columns
+
+# Katsayıları görselleştirin
+plt.figure(figsize=(10,6))
+plt.barh(feature_names, coefficients, color='skyblue')
+plt.xlabel('Katsayı Değeri')
+plt.ylabel('Özellik')
+plt.title('Logistic Regresyon Modeli Özellik Katsayıları')
+plt.grid(True)
+plt.show()
+
+
+#özellik önemi
+
+# Özellik katsayılarını al
+feature_importance = np.abs(log_model.coef_[0])
+
+# Özellik isimleri
+feature_names = X_train.columns
+
+# Özellik katsayılarını ve isimlerini birleştir
+feature_importance_dict = dict(zip(feature_names, abs(feature_importance)))
+
+# Özellik katsayılarını sırala
+sorted_feature_importance = sorted(feature_importance_dict.items(), key=lambda x: x[1], reverse=True)
+
+# Grafik için verileri ayır
+features = [x[0] for x in sorted_feature_importance]
+importance = [x[1] for x in sorted_feature_importance]
+
+
+plt.figure(figsize=(10,6))
+plt.barh(features, importance, color='skyblue')
+plt.xlabel('Katsayı Değeri')
+plt.ylabel('Özellik')
+plt.title('Logistic Regresyon Modeli Özellik Katsayıları')
+plt.grid(True)
+plt.show()

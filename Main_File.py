@@ -668,8 +668,8 @@ parliament["Country"] = parliament["Country"].replace(diffs)
 
 adolescent_fertility_rate["Country"] = adolescent_fertility_rate["Country"].replace(confusion_sorted)
 adolescent_fertility_rate["Country"] = adolescent_fertility_rate["Country"].replace(diffs)
-
-
+merged_df.head(100)
+merged_df.columns
 
 # Kontrol edelim:
 sorted(parliament["Country"].unique())
