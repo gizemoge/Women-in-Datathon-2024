@@ -1235,7 +1235,6 @@ cv_results['test_f1'].mean()
 cv_results['test_roc_auc'].mean()
 # AUC: 0.8666666666666666
 
-#------------------------
 
 
 merged_df_copy = merged_df.copy()
@@ -1474,4 +1473,85 @@ np.sqrt(mean_squared_error(y_test, y_pred))
 ridge.score(X_test, y_test)
 # 0.30191121300305235
 
-oldu mu eda
+# model son gali - 29 mart
+# bu merged_df'i 680. satırdan getirdim
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
+
+# 2014'ü seçtim
+merged_df_copy = merged_df.copy()
+
+merged_df_copy.head()
+
+merged_df_2014 = merged_df_copy[merged_df_copy["Year"] == 2014]
+merged_df_2014.reset_index()
+merged_df_2014.isnull().sum()
+
+# boş değeri sildim
+merged_df_2014 = merged_df_2014.drop(49)
+
+merged_df_2014.isnull().sum()
+
+# hedef değişkeni binary yaptım
+merged_df_2014['Gender wage gap (%)'] = merged_df_2014['Gender wage gap (%)'].apply(lambda x: 1 if x > 0 else 0)
+
+
+# dataframe'i böldüm
+y = merged_df_2014["Gender wage gap (%)"]
+X = merged_df_2014.drop(["Gender wage gap (%)", "Country", "Year"], axis=1)
+
+
+# multicollinearty testini yaptım
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+# VIF
+def calculate_vif(X):
+    vif_data = pd.DataFrame()
+    vif_data["Feature"] = X.columns
+    vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.columns))]
+    return vif_data
+
+vif_results = calculate_vif(X)
+print(vif_results)
+#                                   Feature         VIF
+# 0                        Women Seat Ratio    7.796947
+# 1                Maternal Mortality Ratio    5.815239
+# 2    Male Labour Force Participation Rate   95.931919
+# 3  Female Labour Force Participation Rate  269.943975
+# 4                    F/M Labor Force Part  195.431690
+# 5               Adolescent fertility rate    9.584256
+
+# burada female ve male labor force'u dataframe'den silmem gerektiğini gördüm
+# bağımlı ve bağımsız değişkenleri yeniden seçiyorum o yüzden
+y = merged_df_2014["Gender wage gap (%)"]
+X = merged_df_2014.drop(["Gender wage gap (%)", "Country", 'Male Labour Force Participation Rate',
+       'Female Labour Force Participation Rate', "Year"], axis=1)
+
+# model
+X_train, X_test, y_train, y_test = train_test_split(X,
+                                                    y,
+                                                    test_size=0.20, random_state=42)
+log_model = LogisticRegression().fit(X_train, y_train)
+
+cv_results = cross_validate(log_model,
+                            X, y,
+                            cv=5,
+                            scoring=["accuracy", "precision", "recall", "f1", "roc_auc"])
+
+cv_results['test_accuracy'].mean()
+# Accuracy: 0.86
+
+cv_results['test_precision'].mean()
+# Precision: 0.9355555555555555
+
+cv_results['test_recall'].mean()
+# Recall: 0.9111111111111111
+
+cv_results['test_f1'].mean()
+# F1-score: 0.9200292397660819
+
+cv_results['test_roc_auc'].mean()
+# AUC: 0.7777777777777777
