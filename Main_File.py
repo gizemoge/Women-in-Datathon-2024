@@ -992,13 +992,15 @@ merged_df_2014 = merged_df_2014.drop(49)
 
 merged_df_2014.isnull().sum()
 
+merged_df_2014.shape # (50, 9)
+
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 
-X = merged_df_2014.drop(['Gender wage gap (%)', "Country"], axis=1)
+X = merged_df_2014.drop(['Gender wage gap (%)', "Country", "Year"], axis=1)
 y = merged_df_2014[["Gender wage gap (%)"]]
 
 # Veri setini eğitim ve test kümelerine ayır
@@ -1056,6 +1058,419 @@ r2 = r2_score(y_test, y_pred)
 merged_df
 
 
+merged_df_2014.shape
+# 50, 9
+
+merged_df_2014 = pd.merge(merged_df_2014, f_to_m_unpaid_care_work, on=['Country', "Year"])
+
+merged_df_2014["Country"]
+
+country_array = merged_df_2014["Country"].to_numpy()
+# veya
+# country_array = merged_df_2014["Country"].values
+
+print(country_array)
 
 
+# ['Argentina' 'Austria' 'Belgium' 'Bolivia' 'Brazil' 'Bulgaria' 'Colombia'
+#  'Cyprus' 'Czechia' 'Denmark' 'Dominican Republic' 'Ecuador' 'El Salvador'
+#  'Estonia' 'Finland' 'France' 'Germany' 'Guatemala' 'Honduras' 'Hungary'
+#  'Iceland' 'Ireland' 'Israel' 'Italy' 'Latvia' 'Lithuania' 'Luxembourg'
+#  'Malaysia' 'Malta' 'Mexico' 'Montenegro' 'Netherlands' 'Nicaragua'
+#  'North Macedonia' 'Norway' 'Panama' 'Paraguay' 'Peru' 'Poland' 'Romania'
+#  'Serbia' 'Slovakia' 'Slovenia' 'South Korea' 'Spain' 'Sweden'
+#  'Switzerland' 'Turkiye' 'United Kingdom' 'Uruguay']
+
+merged_df_2014.columns
+merged_df_2014["Gender wage gap (%)"]
+
+# gender wage gap encoding
+merged_df_2014['Gender wage gap (%)'] = merged_df_2014['Gender wage gap (%)'].apply(lambda x: 1 if x > 0 else 0)
+
+#model
+y = merged_df_2014["Gender wage gap (%)"]
+X = merged_df_2014.drop(["Gender wage gap (%)", "Country", "Year"], axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(X,
+                                                    y,
+                                                    test_size=0.20, random_state=42)
+log_model = LogisticRegression().fit(X_train, y_train)
+
+# multicolinearity
+def calculate_vif(X):
+    vif_data = pd.DataFrame()
+    vif_data["Feature"] = X.columns
+    vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.columns))]
+    return vif_data
+
+vif_results = calculate_vif(X)
+print(vif_results)
+#                                   Feature     VIF
+# 0                        Women Seat Ratio   7.797
+# 1                Maternal Mortality Ratio   5.815
+# 2    Male Labour Force Participation Rate  95.932
+# 3  Female Labour Force Participation Rate 269.944
+# 4                    F/M Labor Force Part 195.432
+# 5               Adolescent fertility rate   9.584
+# iki değişkeni silmek gerek
+
+
+
+y_pred = log_model.predict(X_test)
+y_prob = log_model.predict_proba(X_test)[:, 1]
+
+print(classification_report(y_test, y_pred))
+#               precision    recall  f1-score   support
+#            0       0.00      0.00      0.00         0
+#            1       1.00      0.80      0.89        10
+#     accuracy                           0.80        10
+#    macro avg       0.50      0.40      0.44        10
+# weighted avg       1.00      0.80      0.89        10
+
+
+from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, classification_report, roc_curve, RocCurveDisplay   #plot_roc_curve
+
+RocCurveDisplay.from_estimator(log_model, X_test, y_test)
+plt.title('ROC Curve')
+plt.plot([0, 1], [0, 1], 'r--')
+plt.show()
+# çizemedim
+
+# AUC
+roc_auc_score(y_test, y_prob)
+#0.93
+# error verdi
+
+# Model Validation: 5-Fold Cross Validation
+log_model = LogisticRegression().fit(X, y)
+cv_results = cross_validate(log_model,
+                            X, y,
+                            cv=5,
+                            scoring=["accuracy", "precision", "recall", "f1", "roc_auc"])
+
+cv_results['test_accuracy'].mean()
+# Accuracy: 0.86
+
+cv_results['test_precision'].mean()
+# Precision: 0.9355555555555555
+
+cv_results['test_recall'].mean()
+# Recall: 0.9111111111111111
+
+cv_results['test_f1'].mean()
+# F1-score: 0.9200292397660819
+
+cv_results['test_roc_auc'].mean()
+# AUC: 0.7777777777777777
+
+# deneme 2 loj
+logreg = LogisticRegression().fit(X_train, y_train)
+print("Training set score: {:.3f}".format(logreg.score(X_train, y_train)))
+print("Test set score: {:.3f}".format(logreg.score(X_test, y_test)))
+# Training set score: 0.900
+# Test set score: 0.800
+
+# ridge
+from sklearn.linear_model import Ridge
+
+ridge = Ridge().fit(X_train, y_train)
+print("Training set score: {:.2f}".format(ridge.score(X_train, y_train)))
+print("Test set score: {:.2f}".format(ridge.score(X_test, y_test)))
+# Training set score: 0.40
+# Test set score: 0.00
+
+# linear
+lr = LinearRegression().fit(X_train, y_train)
+print("Training set score: {:.2f}".format(lr.score(X_train, y_train)))
+print("Test set score: {:.2f}".format(lr.score(X_test, y_test)))
+# Training set score: 0.40
+# Test set score: 0.00
+
+# x train farklı seçsem------------------------
+merged_df_2014.columns
+
+merged_df_2014.reset_index(inplace=True)
+
+y = merged_df_2014["Gender wage gap (%)"]
+X = merged_df_2014.drop(["Gender wage gap (%)", "Country", 'Male Labour Force Participation Rate',
+       'Female Labour Force Participation Rate', "Year"], axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(X,
+                                                    y,
+                                                    test_size=0.20, random_state=42)
+
+merged_df_2014['Gender wage gap (%)'] = merged_df_2014['Gender wage gap (%)'].apply(lambda x: 1 if x > 0 else 0)
+log_model = LogisticRegression().fit(X_train, y_train)
+
+y_pred = log_model.predict(X_test)
+y_prob = log_model.predict_proba(X_test)[:, 1]
+
+print(classification_report(y_test, y_pred))
+#               precision    recall  f1-score   support
+#            0       0.00      0.00      0.00         0
+#            1       1.00      0.90      0.95        10
+#     accuracy                           0.90        10
+#    macro avg       0.50      0.45      0.47        10
+# weighted avg       1.00      0.90      0.95        10
+
+# Model Validation: 5-Fold Cross Validation
+log_model = LogisticRegression().fit(X, y)
+cv_results = cross_validate(log_model,
+                            X, y,
+                            cv=5,
+                            scoring=["accuracy", "precision", "recall", "f1", "roc_auc"])
+
+cv_results['test_accuracy'].mean()
+# Accuracy: 0.86
+
+cv_results['test_precision'].mean()
+# Precision: 0.9355555555555555
+
+cv_results['test_recall'].mean()
+# Recall: 0.9111111111111111
+
+cv_results['test_f1'].mean()
+# F1-score: 0.9200292397660819
+
+cv_results['test_roc_auc'].mean()
+# AUC: 0.8666666666666666
+
+#------------------------
+
+
+merged_df_copy = merged_df.copy()
+
+merged_df_copy.head()
+
+merged_df_2014 = merged_df_copy[merged_df_copy["Year"] == 2014]
+merged_df_2014.reset_index()
+merged_df_2014.isnull().sum()
+
+merged_df_2014 = merged_df_2014.drop(49)
+
+
+y = merged_df_2014["Gender wage gap (%)"]
+X = merged_df_2014.drop(["Gender wage gap (%)", "Country", 'Male Labour Force Participation Rate',
+       'Female Labour Force Participation Rate', "Year"], axis=1)
+
+
+# linear
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
+
+y_test.shape
+y_train.shape
+
+lin_reg_model = LinearRegression().fit(X_train, y_train)
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = lin_reg_model.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+# 6.712896909893688
+#
+
+# Train RKARE
+lin_reg_model.score(X_train, y_train)
+# 0.4562168903260765
+
+# Test RMSE
+y_pred = lin_reg_model.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 7.156711795989951
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+lin_reg_model.score(X_test, y_test)
+# -0.2436628302988626
+
+
+# 2- Cross validation yöntemi
+# 10 Katlı CV RMSE
+np.mean(np.sqrt(-cross_val_score(lin_reg_model,
+                                 X,
+                                 y,
+                                 cv=10,
+                                 scoring="neg_mean_squared_error")))
+# 0.26010342713230333
+
+
+# 5 Katlı CV RMSE
+np.mean(np.sqrt(-cross_val_score(lin_reg_model,
+                                 X,
+                                 y,
+                                 cv=5,
+                                 scoring="neg_mean_squared_error")))
+# 0.28077612080862735
+
+
+
+# MSE
+# y_pred = y_hat
+y_pred = lin_reg_model.predict(X)
+mean_squared_error(y, y_pred)
+# 0.07531075650202572
+y.mean()
+y.std()
+# satışların ortalaması 14 iken, bir tahmin yaptığımda ortalama 10 birim ile hata yapıyorsam bu büyüktür
+
+# RMSE
+np.sqrt(mean_squared_error(y, y_pred))
+# 3.24
+
+# MAE
+mean_absolute_error(y, y_pred)
+# 2.54
+
+# R-KARE
+reg_model.score(X, y)
+# 0.61
+# bağımsız değişkenlerin bağımlı değişkeni açıklama yüzdesidir.
+# tv, sales'in yüzde 61ini açıklıyor
+# makine öğrenmesinde optimal başarı kovalanır, robustness check'ler yapılmaz yani anlamlılık testleri
+
+
+
+# ridge
+from sklearn.linear_model import Ridge
+
+ridge = Ridge().fit(X_train, y_train)
+
+
+# multicollinearty denemesi
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+# VIF
+def calculate_vif(X):
+    vif_data = pd.DataFrame()
+    vif_data["Feature"] = X.columns
+    vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.columns))]
+    return vif_data
+
+vif_results = calculate_vif(X)
+print(vif_results)
+#                      Feature   VIF
+# 0           Women Seat Ratio 7.763
+# 1   Maternal Mortality Ratio 4.911
+# 2       F/M Labor Force Part 7.912
+# 3  Adolescent fertility rate 5.953
+
+# 10 dan büyük değer yok o yüzden multicolinearity ok
+
+
+
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = ridge.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+# 0.23586845656847694
+
+
+# Train RKARE
+ridge.score(X_train, y_train)
+# 0.38184523551116123
+
+
+# Test RMSE
+y_pred = ridge.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 0.3924278474154638
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+ridge.score(X_test, y_test)
+# -0.7111068380792727
+
+# test ve train'e bölmemize gerek yok sanki
+
+
+# train set'siz ridge
+ridge_2 = Ridge().fit(X_train, y_train)
+
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = ridge.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+# 0.23586845656847694
+
+
+# Train RKARE
+ridge.score(X_train, y_train)
+# 0.38184523551116123
+
+
+# Test RMSE
+y_pred = ridge.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 0.3924278474154638
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+ridge.score(X_test, y_test)
+# -0.7111068380792727
+
+
+
+# test ve train'e bölmemize gerek yok sanki
+# bir de encode'suz haliyle deneyeceğim
+from sklearn.linear_model import Ridge
+
+ridge = Ridge().fit(X_train, y_train)
+
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = ridge.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+# 6.460922195996195
+
+
+
+# Train RKARE
+ridge.score(X_train, y_train)
+# 0.4576928301390928
+
+
+# Test RMSE
+y_pred = ridge.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 6.907153987133104
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+ridge.score(X_test, y_test)
+# 0.30191121300305235
+
+# test ve train'e bölmemize gerek yok sanki
+
+
+# train set'siz ridge
+ridge_2 = Ridge().fit(X_train, y_train)
+
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# Train RKARE
+ridge.score(X_train, y_train)
+# 0.4576928301390928
+
+
+# Test RMSE
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 6.907153987133104
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+ridge.score(X_test, y_test)
+# 0.30191121300305235
 
