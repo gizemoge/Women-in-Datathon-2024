@@ -60,6 +60,9 @@ df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
 # Bu veri seti üzerinde analiz yaparken, veri setlerini detaylıca incelemeniz, anlamanız ve anlamlı bir şekilde yorumlayabilmelisiniz.
 # Hatırlatma: Dış kaynaklardan ekstra veriler bularak veri analizi çalışmanızı zenginleştirebilirsiniz.
 
+def num_summary(dataframe, numerical_col, plot=False):
+    quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
+    print(dataframe[numerical_col, "Entity"].describe(quantiles).T)
 
 # 1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work
 '''(Rapordan) Note: Gender inequality in unpaid care work refers to the female to
@@ -70,6 +73,9 @@ leave policies and gender inequality in unemployment and education.'''
 f_to_m_unpaid_care_work.head()
 f_to_m_unpaid_care_work.shape # (69, 4)
 f_to_m_unpaid_care_work.info() # veritiplerinde sıkıntı yok.
+f_to_m_unpaid_care_work["Code"].nunique()
+f_to_m_unpaid_care_work.loc[f_to_m_unpaid_care_work["Female to male ratio of time devoted to unpaid care work (OECD (2014))"]==1.180]
+f_to_m_unpaid_care_work.loc[f_to_m_unpaid_care_work["Female to male ratio of time devoted to unpaid care work (OECD (2014))"]==17.290]
 """
  #   Column                                                                  Non-Null Count  Dtype    Notes
 ---  ------                                                                  --------------  -----    -----
@@ -86,11 +92,17 @@ f_to_m_unpaid_care_work.info() # veritiplerinde sıkıntı yok.
         max     17.290
 """
 
-
 # 2- share-of-women-in-top-income-groups
 w_in_top_income_groups.head()
 w_in_top_income_groups.shape # (168, 9)
 w_in_top_income_groups.info() # veritiplerinde sıkıntı yok.
+w_in_top_income_groups.Year.nunique()
+w_in_top_income_groups["Share of women in top 0.1%"].describe()
+w_in_top_income_groups.loc[w_in_top_income_groups["Share of women in top 0.1%"]==4.600] # min: Denmark
+w_in_top_income_groups.loc[w_in_top_income_groups["Share of women in top 0.1%"]==20.000] # max: Spain
+w_in_top_income_groups["Share of women in top 10%"].describe()
+w_in_top_income_groups.loc[w_in_top_income_groups["Share of women in top 10%"]==9.400] # min: Denmark
+w_in_top_income_groups.loc[w_in_top_income_groups["Share of women in top 10%"]==34.800] # max: Spain
 """ 
  #   Column                       Non-Null Count  Dtype    Notes
 ---  ------                       --------------  -----    -----
@@ -104,12 +116,14 @@ w_in_top_income_groups.info() # veritiplerinde sıkıntı yok.
  7   Share of women in top 10%    168 non-null    float64
  8   Share of women in top 5%     168 non-null    float64
 """
-
+w_in_top_income_groups.loc[w_in_top_income_groups["Share of women in top 0.1%"]==20]
+w_in_top_income_groups["Share of women in top 0.1%"].describe()
 
 # 3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi
 f_to_m_labor_force_part.head()
 f_to_m_labor_force_part.shape # (6432, 4)
 f_to_m_labor_force_part.info() # veritiplerinde sıkıntı yok.
+f_to_m_labor_force_part.Year.nunique()
 """
  #   Column                                                                             Non-Null Count  Dtype    Notes
 ---  ------                                                                             --------------  -----    -----
@@ -125,7 +139,8 @@ f_to_m_labor_force_part.info() # veritiplerinde sıkıntı yok.
         75%       83.292
         max      108.372
 """
-
+f_to_m_labor_force_part["Ratio of female to male labor force participation rate (%) (modeled ILO estimate)"].describe()
+f_to_m_labor_force_part.loc[f_to_m_labor_force_part["Ratio of female to male labor force participation rate (%) (modeled ILO estimate)"] == 83.292]
 
 #4 (1 ile aynı olduğu için silindi)
 
@@ -135,6 +150,13 @@ f_to_m_labor_force_part.info() # veritiplerinde sıkıntı yok.
 maternal_mortality.head()
 maternal_mortality.shape # (5800, 4)
 maternal_mortality.info() # veritiplerinde sıkıntı yok.
+maternal_mortality.Year.nunique()
+
+quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
+maternal_mortality["Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))"].describe(quantiles).T
+maternal_mortality.loc[maternal_mortality["Maternal Mortality Ratio (Gapminder (2010) and World Bank (2015))"] == 1180]
+maternal_mortality.loc[maternal_mortality["Entity"] == "Sierra Leone"]
+
 """
  #   Column                                                             Non-Null Count  Dtype    Notes
 ---  ------                                                             --------------  -----    -----
@@ -153,9 +175,12 @@ maternal_mortality.info() # veritiplerinde sıkıntı yok.
 
 
 # 6- gender-gap-in-average-wages-ilo
-gender_wage_gap.head()
+gender_wage_gap.head(30)
 gender_wage_gap.shape # (413, 4)
 gender_wage_gap.info() # veritiplerinde sıkıntı yok.
+gender_wage_gap.Year.nunique()
+gender_wage_gap.Year.value_counts()
+gender_wage_gap.loc[gender_wage_gap["Gender wage gap (%)"] == -28.270]
 """
  #   Column               Non-Null Count  Dtype    Notes
 ---  ------               --------------  -----    -----
@@ -201,6 +226,14 @@ human_dev_indices.info() # TODO sorun nedir?
 w_entrepreneurship.head()
 w_entrepreneurship.shape # (51,9)
 w_entrepreneurship.info() # veritiplerinde sıkıntı yok.
+w_entrepreneurship["No"].nunique()
+w_entrepreneurship["Women Entrepreneurship Index"].describe()
+w_entrepreneurship.loc[w_entrepreneurship["Women Entrepreneurship Index"]==25.300]
+w_entrepreneurship.loc[w_entrepreneurship["Female Labor Force Participation Rate"]==13.000]
+w_entrepreneurship.loc[w_entrepreneurship["Country"] == "Belgium"]
+female_labor_force.loc[female_labor_force["Country"] == "Belgium"]
+
+
 """
  #   Column                                 Non-Null Count  Dtype    Notes  
 ---  ------                                 --------------  -----    -----
@@ -228,6 +261,11 @@ w_entrepreneurship.info() # veritiplerinde sıkıntı yok.
 male_labor_force.head()
 male_labor_force.shape # (195, 37)
 male_labor_force.info() # veritiplerinde sıkıntı yok.
+male_labor_force["Continent"].nunique()
+male_labor_force["Continent"].value_counts()
+male_labor_force["Hemisphere"].nunique()
+male_labor_force["Hemisphere"].value_counts()
+
 """
  #   Column                                                              Non-Null Count  Dtype    Notes   
 ---  ------                                                              --------------  -----    -----
@@ -283,6 +321,7 @@ parliament.info() # veritiplerinde sıkıntı yok.
 placement.head()
 placement.shape # (215, 13)
 placement.info() # veritiplerinde sıkıntı yok.
+placement["hsc_board"].info()
 """
  #   Column               Non-Null Count  Dtype    Notes  
 ---  ------               --------------  -----    -----
@@ -626,17 +665,12 @@ confusion_sorted = {'Congo': 'Congo, Rep.',
                    'Micronesia (country)': 'Micronesia',
                    'Micronesia, Fed. Sts.': 'Micronesia'}
 
-# for name, df in df_names.items():
-#     if "Country" in df.columns:
-#         df["Country"] = df["Country"].replace(confusion_sorted)
-#         df["Country"] = df["Country"].replace(diffs)
-#
-# df_list = []
-# df_list = df_names.values()
-# type(df_names)
-# for value in df_names.values.columns:
-#     value["Country"] = value["Country"].replace(confusion_sorted)
+for df in list(df_names.values()):
+     if "Country" in df.columns:
+         df["Country"] = df["Country"].replace(confusion_sorted)
+         df["Country"] = df["Country"].replace(diffs)
 
+f_to_m_unpaid_care_work[f_to_m_unpaid_care_work["Country"]=="Korea"]
 
 # FOR ÇALIŞMAYINCA PES EDİP MANUEL YAZDIK
 f_to_m_unpaid_care_work.head()
@@ -683,7 +717,7 @@ merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
-
+"""
 # gdi için gerder_wage_gap olmadan birleştirme
 merged_df_gdi = pd.merge(parliament, maternal_mortality, on=['Country', "Year"])
 merged_df_gdi = pd.merge(merged_df_gdi, male_labor_force, on=['Country', "Year"])
@@ -696,10 +730,146 @@ merged_df_gdi.to_excel("output.xlsx", index=False)
 unique_countries = merged_df_gdi["Country"].unique()
 unique_country_count = len(unique_countries)
 # 178 adet ülke var unique
+"""
+
+# C. Merge'den önce yılları gruplayalım:
+
+merged_df_year_group = pd.DataFrame()
+for name, df in df_names.items():
+    if "Year" in df.columns:
+        print(f"{name}")
+        df["Year_group"] = pd.cut(df["Year"], [1995, 2002, 2009, 2016])
+        print(f"{name}: {df['Year_group'].value_counts()}")
+        df = df.groupby(["Country", "Year_group"]).mean().reset_index()
+        cleaned_df = df.dropna(subset=df.columns.difference(["Country", "Year_group"]), how="all").drop("Year", axis=1, inplace=True)
+        countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+        print(len(countries_with_three_year_groups))
+        if merged_df_year_group.empty:
+            merged_df_year_group = df
+        else:
+            merged_df_year_group = pd.merge(merged_df_year_group, df, on=['Country', "Year_group"])
+
+merged_df_year_group.head()
+merged_df_year_group.shape
+
+gender_wage_gap.head()
+f_to_m_labor_force_part.head()
+f_to_m_unpaid_care_work.head()
+maternal_mortality.head()
+w_in_top_income_groups.head()
+
+maternal_mortality["Year_group"] = pd.cut(maternal_mortality["Year"], [1995, 2002, 2009, 2016])
+maternal_mortality_grouped = maternal_mortality.groupby(["Country", "Year_group"]).mean().reset_index()
+cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
+countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+len(countries_with_three_year_groups) # 24
+
+gender_wage_gap["Year_group"] = pd.cut(gender_wage_gap["Year"], [1995, 2002, 2009, 2016])
+gender_wage_gap_grouped = gender_wage_gap.groupby(["Country", "Year_group"]).mean().reset_index()
+cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
+countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+len(countries_with_three_year_groups) # 24
+
+f_to_m_labor_force_part["Year_group"] = pd.cut(f_to_m_labor_force_part["Year"], [1995, 2002, 2009, 2016])
+f_to_m_labor_force_part_grouped = f_to_m_labor_force_part.groupby(["Country", "Year_group"]).mean().reset_index()
+cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
+countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+len(countries_with_three_year_groups) # 24
+
+f_to_m_unpaid_care_work["Year_group"] = pd.cut(f_to_m_unpaid_care_work["Year"], [1995, 2002, 2009, 2016])
+f_to_m_unpaid_care_work_grouped = f_to_m_unpaid_care_work.groupby(["Country", "Year_group"]).mean().reset_index()
+cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
+countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+len(countries_with_three_year_groups) # 24
+
+w_in_top_income_groups["Year_group"] = pd.cut(w_in_top_income_groups["Year"], [1995, 2002, 2009, 2016])
+w_in_top_income_groups_grouped = w_in_top_income_groups.groupby(["Country", "Year_group"]).mean().reset_index()
+cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
+countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+len(countries_with_three_year_groups) # 24
+
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
 
 
 
 
+
+# B.1. Merge'de yılları gruplayalım:
+merged_df["Year_group"] = pd.cut(merged_df["Year"], [1995, 2002, 2009, 2016])
+merged_df["Year_group"].value_counts()
+# (2010, 2015]    117
+# (2005, 2010]     99
+# (2000, 2005]     78
+# 24 ülke oluyor
+
+# (2011, 2016]    111
+# (2001, 2006]     89
+# (2006, 2011]     89
+# (1996, 2001]     29
+# 12 ülke oluyor
+
+# (2009, 2016]    155
+# (2002, 2009]    109
+# (1995, 2002]     56
+# 25 ülke oluyor
+merged_df.head(20)
+
+grouped_merged_df = merged_df.groupby(["Country", "Year_group"]).mean().reset_index()
+merged_df[merged_df["Country"]==("Poland")]
+
+cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
+countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
+len(countries_with_three_year_groups) # 24
+
+
+####
+# A.1. Concat
+dfs_to_concat = [gender_wage_gap, parliament, maternal_mortality, male_labor_force, female_labor_force, f_to_m_labor_force_part, adolescent_fertility_rate]
+concat_df = pd.concat(dfs_to_concat, ignore_index=True)
+concat_df.shape # (58641, 9)
+concat_df.head()
+
+# A.2. Yılları grupla.
+concat_df["Year_group"] = pd.cut(concat_df["Year"], [1995, 2002, 2009, 2016])
+concat_df["Year_group"].value_counts()
+
+grouped_concat_df = concat_df.groupby(["Country", "Year_group"]).mean().reset_index() # (867, 10)
+grouped_concat_df.head(20)
+grouped_concat_df.shape
+grouped_concat_df = grouped_concat_df[~grouped_concat_df["Country"].isin(regions)] # (648, 10)
+
+# A.3. Dropna
+# A.3.1. Ülke ve yıl grubu dışındakilerin tamamı boşsa satırı sil: (böyle bir satır yokmuş)
+clean_grouped_concat_df = grouped_concat_df.dropna(subset=grouped_concat_df.columns.difference(["Country", "Year_group"]), how="all")
+clean_grouped_concat_df.shape # (648, 10)
+clean_grouped_concat_df.head(20)
+
+concat_countries_with_three_year_groups = clean_grouped_concat_df["Country"].value_counts()[clean_grouped_concat_df["Country"].value_counts() == 3].index.tolist()
+len(concat_countries_with_three_year_groups) # 216
+
+# A.3.2. Üstte bir etki yaratamadığımız için başka bir yol deneyelim. Gender wage gap'i NaN olanları droplayalım.
+clean_grouped_concat_df = grouped_concat_df.dropna(subset=["Gender wage gap (%)"])
+clean_grouped_concat_df.shape # (119, 10)
+
+# A.3.2.2. 3 yıl grubuna da sahip hangi ülkeler kaldı?
+concat_countries_with_three_year_groups = clean_grouped_concat_df["Country"].value_counts()[clean_grouped_concat_df["Country"].value_counts() == 3].index.tolist()
+len(concat_countries_with_three_year_groups) # 24
+clean_grouped_concat_df["Country"].value_counts()
+
+
+# B.
+# Yılları grupla, sonra mergele
+##########
+
+
+
+
+#
 merged_df["Year"].describe().T # 1990-2016
 merged_df.shape # 324, 9
 
