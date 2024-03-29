@@ -1474,3 +1474,4 @@ np.sqrt(mean_squared_error(y_test, y_pred))
 ridge.score(X_test, y_test)
 # 0.30191121300305235
 
+oldu mu eda
