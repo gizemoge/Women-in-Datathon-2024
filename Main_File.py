@@ -1482,6 +1482,8 @@ merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
 
+merged_df.head()
+
 # 2014'ü seçtim
 merged_df_copy = merged_df.copy()
 
@@ -1555,3 +1557,287 @@ cv_results['test_f1'].mean()
 
 cv_results['test_roc_auc'].mean()
 # AUC: 0.7777777777777777
+
+
+merged_df.head()
+
+merged_df["Year"].value_counts()
+# 2014    51
+# 2010    28
+# 2006    26
+# 2002    25
+# 2013    19
+# 2012    18
+# 2009    17
+# 2011    16
+# 2008    15
+# 2001    15
+# 2005    14
+
+# 2014 ve 2010
+df_2014_2010 = merged_df[(merged_df["Year"] == 2014) | (merged_df["Year"] == 2010)]
+df_2014_2010["Country"].value_counts()
+
+desired_countries = df_2014_2010["Country"].value_counts()[df_2014_2010["Country"].value_counts() == 2].index.tolist()
+print("Desired Countries with Counts 2:", desired_countries)
+# Desired Countries with Counts 2: ['Argentina', 'Netherlands', 'Ireland', 'Italy', 'Austria', 'Luxembourg', 'Malta', 'Mexico',
+# 'Panama', 'Germany', 'Paraguay', 'Peru', 'Slovakia', 'Slovenia', 'South Korea', 'Spain', 'Honduras', 'Uruguay', 'Ecuador',
+# 'El Salvador', 'Cyprus', 'Dominican Republic', 'Belgium', 'Colombia', 'Finland', 'France']
+len(desired_countries)
+# 26
+
+# 2014, 2010, 2006
+df_2014_2010_2006 = merged_df[(merged_df["Year"] == 2014) | (merged_df["Year"] == 2010) | (merged_df["Year"] == 2006)]
+df_2014_2010_2006["Country"].value_counts()
+
+desired_countries = df_2014_2010_2006["Country"].value_counts()[df_2014_2010_2006["Country"].value_counts() == 3].index.tolist()
+print("Desired Countries with Counts 3:", desired_countries)
+# Desired Countries with Counts 3: ['Argentina', 'Ecuador', 'Peru', 'Netherlands', 'Luxembourg', 'Austria', 'Italy', 'Ireland',
+# 'Honduras', 'Panama', 'France', 'Finland', 'El Salvador', 'Germany', 'Dominican Republic', 'Spain', 'Belgium', 'Uruguay', 'Paraguay']
+len(desired_countries)
+# 19
+
+
+# 2014, 2010, 2006, 2002
+df_2014_2010_2006_2002 = merged_df[(merged_df["Year"] == 2014) | (merged_df["Year"] == 2010) | (merged_df["Year"] == 2006) | (merged_df["Year"] == 2002)]
+df_2014_2010_2006_2002["Country"].value_counts()
+
+desired_countries = df_2014_2010_2006_2002["Country"].value_counts()[df_2014_2010_2006_2002["Country"].value_counts() == 4].index.tolist()
+print("Desired Countries with Counts 4:", desired_countries)
+# Desired Countries with Counts 4: ['Argentina', 'Panama', 'Ireland', 'Luxembourg', 'Honduras', 'Germany', 'France', 'Finland', 'Netherlands',
+# 'El Salvador', 'Italy', 'Dominican Republic', 'Paraguay', 'Peru', 'Spain', 'Uruguay', 'Belgium', 'Austria']
+len(desired_countries)
+# 18
+
+
+#################### SON MODEL #################################################3
+# Veri çerçevelerini birleştirme
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
+
+
+
+min_year = merged_df['Year'].min() # 1990
+max_year = merged_df['Year'].max() # 2016
+
+merged_df.head()
+
+merged_df.shape # 324, 9
+
+merged_df.isnull().sum()
+# Country                                    0
+# Year                                       0
+# Gender wage gap (%)                        0
+# Women Seat Ratio                          14
+# Maternal Mortality Ratio                   0
+# Male Labour Force Participation Rate       0
+# Female Labour Force Participation Rate     0
+# F/M Labor Force Part                       0
+# Adolescent fertility rate                  0
+
+# şimdilik siliyorum
+merged_df.dropna(subset=["Women Seat Ratio"], inplace=True)
+merged_df.shape# 310, 9
+
+min_year = merged_df['Year'].min() # 1998
+max_year = merged_df['Year'].max() # 2016
+
+def assign_year_category(year):
+    if 1996 <= year < 2003:
+        return 0
+    elif 2003 <= year < 2010:
+        return 1
+    elif 2010 <= year < 2017:
+        return 2
+    else:
+        return None  # Diğer durumlar için NaN (opsiyonel)
+
+# Yeni bir "yıl_kategorisi" sütunu oluşturma
+merged_df['yıl_kategorisi'] = merged_df['Year'].apply(assign_year_category)
+
+merged_df['yıl_kategorisi'].isnull().sum() # 0
+
+merged_df.drop("Year", inplace=True, axis=1)
+
+
+# ülkelere göre one hot encoding
+merged_df["Country"].nunique() # 62
+merged_df.shape # 310
+
+
+merged_df['yıl_kategorisi'].value_counts()
+
+def grab_col_names(dataframe, cat_th=1, car_th=63):
+    """
+
+    Veri setindeki kategorik, numerik ve kategorik fakat kardinal değişkenlerin isimlerini verir.
+    Not: Kategorik değişkenlerin içerisine numerik görünümlü kategorik değişkenler de dahildir.
+
+    Parameters
+    ------
+        dataframe: dataframe
+                Değişken isimleri alınmak istenilen dataframe
+        cat_th: int, optional
+                numerik fakat kategorik olan değişkenler için sınıf eşik değeri
+        car_th: int, optinal
+                kategorik fakat kardinal değişkenler için sınıf eşik değeri
+
+    Returns
+    ------
+        cat_cols: list
+                Kategorik değişken listesi
+        num_cols: list
+                Numerik değişken listesi
+        cat_but_car: list
+                Kategorik görünümlü kardinal değişken listesi
+
+    Examples
+    ------
+        import seaborn as sns
+        df = sns.load_dataset("iris")
+        print(grab_col_names(df))
+
+
+    Notes
+    ------
+        cat_cols + num_cols + cat_but_car = toplam değişken sayısı
+        num_but_cat cat_cols'un içerisinde.
+        Return olan 3 liste toplamı toplam değişken sayısına eşittir: cat_cols + num_cols + cat_but_car = değişken sayısı
+
+    """
+
+    # cat_cols, cat_but_car
+    cat_cols = [col for col in dataframe.columns if dataframe[col].dtypes == "O"]
+    num_but_cat = [col for col in dataframe.columns if dataframe[col].nunique() < cat_th and
+                   dataframe[col].dtypes != "O"]
+    cat_but_car = [col for col in dataframe.columns if dataframe[col].nunique() > car_th and
+                   dataframe[col].dtypes == "O"]
+    cat_cols = cat_cols + num_but_cat
+    cat_cols = [col for col in cat_cols if col not in cat_but_car]
+
+    # num_cols
+    num_cols = [col for col in dataframe.columns if dataframe[col].dtypes != "O"]
+    num_cols = [col for col in num_cols if col not in num_but_cat]
+
+    print(f"Observations: {dataframe.shape[0]}")
+    print(f"Variables: {dataframe.shape[1]}")
+    print(f'cat_cols: {len(cat_cols)}')
+    print(f'num_cols: {len(num_cols)}')
+    print(f'cat_but_car: {len(cat_but_car)}')
+    print(f'num_but_cat: {len(num_but_cat)}')
+    return cat_cols, num_cols, cat_but_car
+
+cat_cols, num_cols, cat_but_car = grab_col_names(merged_df)
+
+def one_hot_encoder(dataframe, categorical_cols, drop_first=True):
+    dataframe = pd.get_dummies(dataframe, columns=categorical_cols, drop_first=drop_first, dtype="int")
+    return dataframe
+
+deneme = one_hot_encoder(merged_df, cat_cols)
+
+# deneme ana dataframe'imiz
+
+deneme.head()
+deneme.columns
+# multiple linear regression
+X = deneme.drop(['Gender wage gap (%)', 'Male Labour Force Participation Rate', 'Female Labour Force Participation Rate'], axis=1)
+y = deneme[["Gender wage gap (%)"]]
+
+##########################
+# Model
+##########################
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
+
+reg_model = LinearRegression().fit(X, y)
+
+# MSE
+y_pred = reg_model.predict(X)
+mean_squared_error(y, y_pred)
+# 14.468011206042203
+
+# RMSE
+np.sqrt(mean_squared_error(y, y_pred))
+# 3.80368389933262
+
+# MAE
+mean_absolute_error(y, y_pred)
+# 2.5845697656950732
+
+
+# R-KARE
+reg_model.score(X, y)
+# 0.842719425168627
+
+
+# standartlaştırma yapalım
+deneme.columns
+# ['Gender wage gap (%)', 'Women Seat Ratio', 'Women Seat Ratio']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
+
+reg_model = LinearRegression().fit(X, y)
+
+rs = RobustScaler()
+deneme["Gender wage gap (%)"] = rs.fit_transform(deneme[["Gender wage gap (%)"]])
+deneme["Women Seat Ratio"] = rs.fit_transform(deneme[["Women Seat Ratio"]])
+deneme["Maternal Mortality Ratio"] = rs.fit_transform(deneme[["Maternal Mortality Ratio"]])
+
+deneme.describe().T
+
+deneme.columns
+
+
+deneme.head()
+
+# MSE
+y_pred = reg_model.predict(X)
+mean_squared_error(y, y_pred)
+# 0.08309789974380676
+
+# RMSE
+np.sqrt(mean_squared_error(y, y_pred))
+# 0.28826706323096773
+
+# MAE
+mean_absolute_error(y, y_pred)
+# 0.19587493487647156
+
+
+# R-KARE
+reg_model.score(X, y)
+# 0.842719425168627
+
+# valida
+##########################
+# Tahmin Başarısını Değerlendirme
+##########################
+
+# 1- hold out yöntemi:
+# Train RMSE
+y_pred = reg_model.predict(X_train)
+np.sqrt(mean_squared_error(y_train, y_pred))
+# 0.27978577008352923
+# yeni dğeşken eklendiği için hata düştü
+
+# Train RKARE
+reg_model.score(X_train, y_train)
+# 0.8619443684603638
+
+# Test RMSE
+y_pred = reg_model.predict(X_test)
+np.sqrt(mean_squared_error(y_test, y_pred))
+# 0.3199518559941478
+# test hatası normalde train hatasından daha yüksek çıkar
+
+# Test RKARE
+reg_model.score(X_test, y_test)
+# 0.7242618894974271
+
+
+deneme.groupby("yıl_kategorisi").agg({"Gender wage gap (%)": "median"})
+
