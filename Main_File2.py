@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from functools import reduce
 import os
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.preprocessing import RobustScaler
@@ -644,6 +645,10 @@ confusion_sorted = {'Congo': 'Congo, Rep.',
                    'Micronesia (country)': 'Micronesia',
                    'Micronesia, Fed. Sts.': 'Micronesia'}
 
+# Update df_list with updated versions
+df_list = [f_to_m_unpaid_care_work, w_in_top_income_groups, f_to_m_labor_force_part, maternal_mortality, gender_wage_gap, w_entrepreneurship, male_labor_force, female_labor_force, placement, parliament, adolescent_fertility_rate, human_dev_indices]
+
+# Replace Country names (can also add code to remove region names).
 dfs_after_confusion_sorted = []
 for df in df_list:
     df_copy = df.copy()
@@ -657,47 +662,18 @@ print(f_to_m_unpaid_care_work[f_to_m_unpaid_care_work["Country"] == "Korea"])
 sorted(parliament["Country"].unique())
 parliament.columns
 
+
+
+
 # MERGE VAKTİ
-merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"]) # TODO parliamentın melt'ini tekrar yürütmek gerekiyor. Neden anlamadım. Belki de ülkeleri önce yapıp sonra meltleri yapmak lazım.
-merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"]) # TODO burada takılıyor.
-merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
-
-### chat gpt başlangıç
-from functools import reduce
-
-# List of dataframes to merge
-dataframes_to_merge = [gender_wage_gap, parliament, maternal_mortality,
-                       male_labor_force, female_labor_force, f_to_m_labor_force_part,
-                       adolescent_fertility_rate]
-
-# Define the columns to merge on
+dataframes_to_merge = [gender_wage_gap, parliament, maternal_mortality, male_labor_force, female_labor_force, f_to_m_labor_force_part, adolescent_fertility_rate]
 merge_on_columns = ['Country', 'Year']
-
-# Perform sequential merge using reduce and a lambda function
 merged_df = reduce(lambda left, right: pd.merge(left, right, on=merge_on_columns), dataframes_to_merge)
+merged_df.head()
+merged_df.shape
 
-### chat gpt bitiş
-
-"""
-# gdi için gerder_wage_gap olmadan birleştirme
-merged_df_gdi = pd.merge(parliament, maternal_mortality, on=['Country', "Year"])
-merged_df_gdi = pd.merge(merged_df_gdi, male_labor_force, on=['Country', "Year"])
-merged_df_gdi = pd.merge(merged_df_gdi, female_labor_force, on=['Country', "Year"])
-merged_df_gdi = pd.merge(merged_df_gdi, f_to_m_labor_force_part, on=['Country', "Year"])
-merged_df_gdi = pd.merge(merged_df_gdi, adolescent_fertility_rate, on=['Country', "Year"])
-# bunu excel'e alıyorum
-merged_df_gdi.to_excel("output.xlsx", index=False)
-
-unique_countries = merged_df_gdi["Country"].unique()
-unique_country_count = len(unique_countries)
-# 178 adet ülke var unique
-"""
 
 # C. Merge'den önce yılları gruplayalım:
-
 merged_df_year_group = pd.DataFrame()
 for name, df in df_names.items():
     if "Year" in df.columns:
@@ -746,12 +722,6 @@ cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.differenc
 countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
 len(countries_with_three_year_groups) # 24
 
-w_in_top_income_groups["Year_group"] = pd.cut(w_in_top_income_groups["Year"], [1995, 2002, 2009, 2016])
-w_in_top_income_groups_grouped = w_in_top_income_groups.groupby(["Country", "Year_group"]).mean().reset_index()
-cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
-countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
-len(countries_with_three_year_groups) # 24
-
 merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
@@ -760,35 +730,6 @@ merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
 
 
-
-
-
-# B.1. Merge'de yılları gruplayalım:
-merged_df["Year_group"] = pd.cut(merged_df["Year"], [1995, 2002, 2009, 2016])
-merged_df["Year_group"].value_counts()
-# (2010, 2015]    117
-# (2005, 2010]     99
-# (2000, 2005]     78
-# 24 ülke oluyor
-
-# (2011, 2016]    111
-# (2001, 2006]     89
-# (2006, 2011]     89
-# (1996, 2001]     29
-# 12 ülke oluyor
-
-# (2009, 2016]    155
-# (2002, 2009]    109
-# (1995, 2002]     56
-# 25 ülke oluyor
-merged_df.head(20)
-
-grouped_merged_df = merged_df.groupby(["Country", "Year_group"]).mean().reset_index()
-merged_df[merged_df["Country"]==("Poland")]
-
-cleaned_df = grouped_merged_df.dropna(subset=grouped_merged_df.columns.difference(["Country", "Year_group"]), how="all")
-countries_with_three_year_groups = cleaned_df["Country"].value_counts()[cleaned_df["Country"].value_counts() == 3].index.tolist()
-len(countries_with_three_year_groups) # 24
 
 
 ####
@@ -826,14 +767,7 @@ len(concat_countries_with_three_year_groups) # 24
 clean_grouped_concat_df["Country"].value_counts()
 
 
-# B.
-# Yılları grupla, sonra mergele
-##########
-
-
-
-
-#
+"""
 merged_df["Year"].describe().T # 1990-2016
 merged_df.shape # 324, 9
 
@@ -916,7 +850,7 @@ maternal_mortality["Year"].sort_values().value_counts()
 
 merged_df["Year"].value_counts()
 
-"""
+
 years_array = np.arange(1970, 2024)
 for year in years_array:
     for name, df in df_names.items():
@@ -929,9 +863,9 @@ for year in years_array:
                 df = pd.concat([df, new_row], ignore_index=True)
                 # Update the original DataFrame in df_names dictionary
                 df_names[name] = df
-"""
-gender_wage_gap["Entity"].value_counts()
 
+gender_wage_gap["Entity"].value_counts()
+"""
 
 #Eda-------------------------------------------------------------------------
 merged_df_copy = merged_df.copy()
