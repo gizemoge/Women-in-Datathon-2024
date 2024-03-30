@@ -24,22 +24,57 @@ pd.set_option('display.width', 170)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
+#
 f_to_m_unpaid_care_work = pd.read_csv("datasets/1- female-to-male-ratio-of-time-devoted-to-unpaid-care-work.csv")
+f_to_m_unpaid_care_work.name = 'f_to_m_unpaid_care_work'
+
 w_in_top_income_groups = pd.read_csv("datasets/2- share-of-women-in-top-income-groups.csv")
+w_in_top_income_groups.name = 'w_in_top_income_groups'
+
 f_to_m_labor_force_part = pd.read_csv("datasets/3- ratio-of-female-to-male-labor-force-participation-rates-ilo-wdi.csv")
+f_to_m_labor_force_part.name = 'f_to_m_labor_force_part'
+
 maternal_mortality = pd.read_csv("datasets/5- maternal-mortality.csv")
+maternal_mortality.name = 'maternal_mortality'
+
 gender_wage_gap = pd.read_csv("datasets/6- gender-gap-in-average-wages-ilo.csv")
+gender_wage_gap.name = 'gender_wage_gap'
+
 w_entrepreneurship = pd.read_csv("datasets/Labor Force-Women Entrpreneurship.csv", sep=";")
+w_entrepreneurship.name = 'w_entrepreneurship'
+
 male_labor_force = pd.read_csv("datasets/Labour Force Participation - Male.csv")
+male_labor_force.name = 'male_labor_force'
+
 female_labor_force = pd.read_csv("datasets/Labour Force Participation Female.csv")
+female_labor_force.name = 'female_labor_force'
+
 placement = pd.read_csv("datasets/Placement.csv")
+placement.name = 'placement'
+
 # 1 ve 4, 7 ve 11 excel'ler aynı
 parliament = pd.read_excel("datasets/Parliament.xlsx")
+parliament.name = 'parliament'
+
 adolescent_fertility_rate = pd.read_excel("datasets/Adolescent_Fertility_Rate.xlsx")
+adolescent_fertility_rate.name = 'adolescent_fertility_rate'
+
 human_dev_indices = pd.read_excel("datasets/Human Development Composite Indices.xlsx")
+human_dev_indices.name = 'human_dev_indices'
 
+df_list = [f_to_m_unpaid_care_work,
+           w_in_top_income_groups,
+           f_to_m_labor_force_part,
+           maternal_mortality,
+           gender_wage_gap,
+           w_entrepreneurship,
+           male_labor_force,
+           female_labor_force,
+           placement,
+           parliament,
+           adolescent_fertility_rate,
+           human_dev_indices]
 
-# Veriseti isimlerini çıktı alabilmek için sözlük yaratalım:
 df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
             "w_in_top_income_groups": w_in_top_income_groups,
             "f_to_m_labor_force_part": f_to_m_labor_force_part,
@@ -51,7 +86,6 @@ df_names = {"f_to_m_unpaid_care_work": f_to_m_unpaid_care_work,
             "placement": placement,
             "parliament": parliament,
             "adolescent_fertility_rate": adolescent_fertility_rate}
-
 
 ##############################################
 # VERİ SETİ İNCELEME VE AÇIKLAMASI
@@ -348,46 +382,46 @@ placement["hsc_board"].info()
 
 # Başka isimlerle verilen ülke değişkeni ismini Country olarak standardize edelim:
 cols_to_change = ["Entity", "Country Name"]
-for name, df in df_names.items():
+for df in df_list:
     matched_cols = [col for col in cols_to_change if col in df.columns]
     if matched_cols:
-        print(f"Matched columns in {name}: {', '.join(matched_cols)}")
+        print(f"Matched columns in {df.name}: {', '.join(matched_cols)}")
         rename_dict = {col: 'Country' for col in matched_cols}  # Dictionary to hold old and new column names
         df.rename(columns=rename_dict, inplace=True)  # Use rename_dict in rename method
-        print(f"--> Columns renamed as 'Country' in {name}: {', '.join(matched_cols)}\n")
+        print(f"--> Columns renamed as 'Country' in {df.name}: {', '.join(matched_cols)}\n")
     else:
-        print(f"No matched columns in {name}\n")
+        print(f"No matched columns in {df.name}\n")
 
 parliament.columns
 maternal_mortality.columns
 
 
 # Ülke ismi kısaltmalarını içeren değişkenleri silelim:
-for name, df in df_names.items():
+for df in df_list:
     cols_to_drop = ["Code", "Country Code", "ISO3", "No"]
     matched_cols = [col for col in cols_to_drop if col in df.columns]
     if matched_cols:
-        print(f"Matched variables in {name}: {', '.join(matched_cols)}")
+        print(f"Matched variables in {df.name}: {', '.join(matched_cols)}")
         for col in matched_cols:
             df.drop(columns=col, inplace=True)
-        print(f"--> Dropped columns from {name}: {', '.join(matched_cols)}\n")
+        print(f"--> Dropped columns from {df.name}: {', '.join(matched_cols)}\n")
     else:
-        print(f"No matched variables in {name}\n")
+        print(f"No matched variables in {df.name}\n")
 
 # Gereksiz indikatör isim değişkenlerini silelim:
-for name, df in df_names.items():
+for df in df_list:
     inds_to_drop = ["Indicator Name", "Indicator Code"]
     matched_inds = [ind for ind in inds_to_drop if ind in df.columns]
     if matched_inds:
-        print(f"Indicator variables in {name}: {', '.join(matched_inds)}")
+        print(f"Indicator variables in {df.name}: {', '.join(matched_inds)}")
         print("###################")
         print(df[matched_inds].nunique())
         print("###################")
         for ind in matched_inds:
             df.drop(columns=ind, inplace=True)
-        print(f"--> Dropped columns from {name}: {', '.join(matched_inds)}\n")
+        print(f"--> Dropped columns from {df.name}: {', '.join(matched_inds)}\n")
     else:
-        print(f"No indicators in {name}\n")
+        print(f"No indicators in {df.name}\n")
 
 
 # Tablo okuma kolaylığı için uzun değişken isimlerini kısaltalım:
@@ -417,126 +451,56 @@ maternal_mortality.info()
 
 gender_wage_gap.columns # TODO target
 
-# Farklı yılları temsil eden sütunları, satır yapalım:
+# Farklı yılları temsil eden sütunları, satır yapalım ve Year değişkenini string'den yarattığımız için tipini int yapalım:
 parliament = pd.melt(parliament, id_vars=['Country'], var_name='Year', value_name='Women Seat Ratio')
-# Kontrol edelim:
-parliament.tail()
-parliament.info()
-# Year değişkenini biz string'den yarattığımız için tipini int yapmalıyız:
 parliament["Year"] = parliament["Year"].astype("int")
 
-# Farklı yılları temsil eden sütunları, satır yapalım:
 adolescent_fertility_rate = pd.melt(adolescent_fertility_rate, id_vars=['Country'], var_name='Year', value_name='Adolescent fertility rate')
-adolescent_fertility_rate.head()
 adolescent_fertility_rate["Year"] = adolescent_fertility_rate["Year"].astype("int")
 
-############
-# For döngüsü ile male ve fmale labor foce df'lerinin işlemlerini kısaltalım:
-
-df_names = [df.name for df in labor_force_dfs]
-print(df_names)
-
+# Male ve female labor force df'lerini process ediyoruz:
 labor_force_dfs = [male_labor_force, female_labor_force]
-new_labor_force_dfs = list()
-type(labor_force_dfs)
+new_labor_dfs = []
 var_name = "Labour Force Participation Rate"
-for i, df in enumerate(labor_force_dfs):
-    # Farklı yılları temsil eden sütunları, satır yapalım:
-    df = pd.melt(df, id_vars=['Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'],
-                 var_name="Labour Force Participation Rate")
-    if any(df["Labour Force Participation Rate"].str.contains('female', case=False, na=False)):
-        df.rename(columns={'value': 'Female Labour Force Participation Rate'}, inplace=True)
+
+for df in labor_force_dfs:
+    df_copy = df.copy()  # Create a copy of the DataFrame
+    df_copy = pd.melt(df_copy, id_vars=['Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'],
+                      var_name=var_name)
+    if any(df_copy[var_name].str.contains('female', case=False, na=False)):
+        df_copy.rename(columns={'value': 'Female Labour Force Participation Rate'}, inplace=True)
     else:
-        df.rename(columns={'value': 'Male Labour Force Participation Rate'}, inplace=True)
-    new_labor_force_dfs.append(df)
-
-[df.name for df in labor_force_dfs]
-labor_force_dfs = new_labor_force_dfs
-male_labor_force.head()
-
-    # Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluşturalım:
+        df_copy.rename(columns={'value': 'Male Labour Force Participation Rate'}, inplace=True)
     year_val = []
-    for val in df["Labour Force Participation Rate"].values:
+    for val in df_copy[var_name].values:
         year = val.split(" ")[-1].replace("(", "").replace(")", "")
         year_val.append(year)
-    df['Year'] = df[var_name].replace(df[var_name].tolist(), year_val)
-    df['Year'] = df['Year'].astype('int')
+    df_copy['Year'] = df_copy[var_name].replace(df_copy[var_name].tolist(), year_val)
+    df_copy['Year'] = df_copy['Year'].astype('int')
     # Verisetini şu anki gibi yıla göre değil, ülkelere göre alfabetik sıralayalım:
-    df.sort_values(by='Country', inplace=True)
+    df_copy.sort_values(by='Country', inplace=True)
     # Fazla değişkenleri silelim:
-    df.drop(["HDI Rank (2021)", "Labour Force Participation Rate", "Continent", "Hemisphere"], axis=1, inplace=True)
-    labor_force_dfs[i] = df
+    df_copy.drop([var_name, "HDI Rank (2021)", "Continent", "Hemisphere"], axis=1, inplace=True)
+    new_labor_dfs.append(df_copy)
+
+male_labor_force, female_labor_force = new_labor_dfs
 
 male_labor_force.head()
 female_labor_force.head()
 
-###########
-# Farklı yılları temsil eden sütunları, satır yapalım:
-male_labor_force = pd.melt(male_labor_force, id_vars=['Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Male Labour Force Participation Rate')
-male_labor_force.head()
 
-# Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluşturalım:
-
-m_val = []
-for val in male_labor_force["Labour Force Participation Rate"].values:
-    new_name = val.split(" ")[-1].replace("(", "").replace(")", "")
-    m_val.append(new_name)
-
-male_labor_force['Year'] = male_labor_force['Labour Force Participation Rate'].replace(male_labor_force['Labour Force Participation Rate'].tolist(), m_val)
-male_labor_force["Year"] = male_labor_force["Year"].astype("int")
-
-# Verisetini şu anki gibi yıla göre değil, ülkelere göre alfabetik sıralayalım:
-male_labor_force.sort_values(by='Country', inplace=True)
-male_labor_force.head()
-
-# Fazla değişkenleri silelim:
-male_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate", "Continent", "Hemisphere"], axis=1, inplace=True)
-
-# Farklı yılları temsil eden sütunları, satır yapalım:
-female_labor_force = pd.melt(female_labor_force, id_vars=['Country', 'Continent', 'Hemisphere', 'HDI Rank (2021)'], var_name='Labour Force Participation Rate', value_name='Female Labour Force Participation Rate')
-female_labor_force.head()
-female_labor_force.tail()
-
-# Eski sütun ismi içerisindeki yıl bilgisini kaldırarak yeni isim oluşturalım:
-f_val = []
-for val in female_labor_force["Labour Force Participation Rate"].values:
-    new_name = val.split(" ")[-1].replace("(", "").replace(")", "")
-    f_val.append(new_name)
-
-female_labor_force['Year'] = female_labor_force['Labour Force Participation Rate'].replace(female_labor_force['Labour Force Participation Rate'].tolist(), f_val)
-female_labor_force["Year"] = female_labor_force["Year"].astype("int")
-
-# Verisetini şu anki gibi yıla göre değil, ülkelere göre alfabetik sıralayalım:
-female_labor_force.sort_values(by='Country', inplace=True)
-female_labor_force.head()
-
-# Fazla değişkenleri silelim:
-female_labor_force.drop(["HDI Rank (2021)", "Labour Force Participation Rate", "Continent", "Hemisphere"], axis=1, inplace=True)
-
-
-
-########################
-# TODO male ve female labor_force verisetlerini aynı işlemlerden geçiriyoruz. Daha şık olması için bu ikisini liste + fonksiyon + for_döngüsü ile birleştirelim.
-# Şimdi birleştirelim:
-# Cinsiyetlerin iş gücüne katılımını gösteren iki ayrı verisetini birleştirerek yeni veriseti oluşturalım:
-#merged_labor_force = pd.merge(female_labor_force, male_labor_force, on=["Country"])
-#df_names.update({"merged_labor_force": merged_labor_force})
-#"merged_labor_force" in df_names # True
-
-
-# COUNTRY HESAPLARI
-
-# TODO Biz burada bir sıkıntı var sandık (merge, aldığı iki verisetinde de ortak olmayanları sildiği için, merge sıralamasının veri kaybetmemek içni önemli olduğunu düşündük) ama her halükarda en küçükle en büyük veriseti çarpışacağı için aslında önemli değil.
+# Country değerleri standardizasyonu
 countries = []
-for name, df in df_names.items():
+for df in df_list:
     if "Country" in df.columns:
         country_vals_list = df["Country"].tolist()
         countries.extend(country_vals_list)
-
+"""
 # Her bir ülkeye ait kaç gözlemimiz olduğuna bakalım:
 for country in set(countries):
     tekrar_sayisi = countries.count(country)
     print(f"{country}: {tekrar_sayisi}")
+"""
 
 # Unique ülkeleri alıp alfabetik sıralayalım:
 countries_unique = sorted(list(set(countries)))
@@ -616,7 +580,6 @@ regions = ['Africa Eastern and Southern',
            'Upper-middle-income countries',
            'World']
 
-# TODO South Sudan, Kosovo vb. yeni devletleri dahil edip etmeme konusunu düşünmemiz lazım.
 # Şimdi de yazım farklılıklarını ayıralım:
 diffs = {'Samoa': 'American Samoa',
          'Bahamas, The': 'Bahamas',
@@ -630,13 +593,11 @@ diffs = {'Samoa': 'American Samoa',
          'Kyrgyz Republic': 'Kyrgyzstan',
          'Macao SAR, China': 'Macao',
          'Macedonia': 'North Macedonia',
-         # ['Puerto Rico'], # TODO ABD'ye bağlı, hem ABD hem PR sorun olur mu bilmiyorum, belki çıkarırız.
          'Russian Federation': 'Russia',
          'Saint Kitts and Nevis': 'St. Kitts and Nevis',
          'Saint Lucia': 'St. Lucia',
          'Saint Vincent and the Grenadines': 'St. Vincent and the Grenadines',
          'Slovak Republic': 'Slovakia',
-         # ['Sudan', 'South Sudan'],
          'Syrian Arab Republic': 'Syria',
          'Turkey': 'Turkiye',
          'UK': 'United Kingdom',
@@ -645,31 +606,16 @@ diffs = {'Samoa': 'American Samoa',
          'United States Virgin Islands': 'Virgin Islands (U.S.)',
          'Yemen, Rep.': 'Yemen',
          'Palestine, State of': 'Palestine',
-         'West Bank and Gaza': 'Palestine'}
+         'West Bank and Gaza': 'Palestine',
+         'Lao': 'Laos',
+         'Lao PDR': 'Laos'}
 
 # Farklı yazımlara sahip benzer isimleri olan ülkeleri ayıralım sadeleştirme için kaynak verisetlerinden kontrol edebilelim:
 confusions = ['Congo', 'Congo, Dem. Rep.', 'Congo, Rep.', 'Democratic Republic of Congo','The Democratic Republic of the Congo',  # TODO Congo derken?
               'Korea', "Korea, Dem. People's Rep.", 'Korea, Rep.', 'North Korea', 'South Korea',
-              'Lao', 'Lao PDR', 'Laos',
               'Micronesia', 'Micronesia (country)', 'Micronesia, Fed. Sts.']
-len(confusions) # 19
+len(confusions)
 
-"""
-# Bu karışık yazımların hangi verisetlerinden geldiğini bulalım:
-for confused_name in confusions:
-    print(f"'{confused_name}':")
-    df_with_confusion = []
-    for name, df in df_names.items():
-        if "Country" in df.columns:
-            if confused_name in df["Country"].values:
-                df_with_confusion.append(name)
-            #else:
-                #print(f"- not in: '{name}'")
-        #else:
-            # print(f"No 'Country' column applicable in: '{name}'")
-    print(df_with_confusion)
-    print("\n")
-"""
 # Hangi verisetinde hangi karışık yazımlar var bakalım ve her veriseti için kaydedelim:
 confusion_df_dict = {}
 for name, df in df_names.items():
@@ -680,14 +626,13 @@ for name, df in df_names.items():
             if confused_name in df["Country"].values:
                 confusions_in_df.append(confused_name)
         print(confusions_in_df)
-        confusion_df_dict.update({ name : confusions_in_df})
+        confusion_df_dict.update({name: confusions_in_df})
         #globals()[f"confusions_in_{name}"] = confusions_in_df
     else:
         print("[]")
     print("\n")
 
 confusion_df_dict.keys()
-df_names
 
 # Temizleyelim.
 confusion_sorted = {'Congo': 'Congo, Rep.',
@@ -696,63 +641,46 @@ confusion_sorted = {'Congo': 'Congo, Rep.',
                    'Korea': 'South Korea',
                    'Korea, Rep.': 'South Korea',
                    "Korea, Dem. People's Rep.": 'North Korea',
-                   'Lao': 'Laos',
-                   'Lao PDR': 'Laos',
                    'Micronesia (country)': 'Micronesia',
                    'Micronesia, Fed. Sts.': 'Micronesia'}
 
-for df in list(df_names.values()):
-     if "Country" in df.columns:
-         df["Country"] = df["Country"].replace(confusion_sorted)
-         df["Country"] = df["Country"].replace(diffs)
-
-f_to_m_unpaid_care_work[f_to_m_unpaid_care_work["Country"]=="Korea"]
-
-# FOR ÇALIŞMAYINCA PES EDİP MANUEL YAZDIK
-f_to_m_unpaid_care_work.head()
-f_to_m_unpaid_care_work.info()
-f_to_m_unpaid_care_work["Country"] = f_to_m_unpaid_care_work["Country"].replace(confusion_sorted)
-f_to_m_unpaid_care_work["Country"] = f_to_m_unpaid_care_work["Country"].replace(diffs)
-
-w_in_top_income_groups["Country"] = w_in_top_income_groups["Country"].replace(confusion_sorted)
-w_in_top_income_groups["Country"] = w_in_top_income_groups["Country"].replace(diffs)
-
-f_to_m_labor_force_part["Country"] = f_to_m_labor_force_part["Country"].replace(confusion_sorted)
-f_to_m_labor_force_part["Country"] = f_to_m_labor_force_part["Country"].replace(diffs)
-
-maternal_mortality["Country"] = maternal_mortality["Country"].replace(confusion_sorted)
-maternal_mortality["Country"] = maternal_mortality["Country"].replace(diffs)
-
-gender_wage_gap["Country"] = gender_wage_gap["Country"].replace(confusion_sorted)
-gender_wage_gap["Country"] = gender_wage_gap["Country"].replace(diffs)
-
-w_entrepreneurship["Country"] = w_entrepreneurship["Country"].replace(confusion_sorted)
-w_entrepreneurship["Country"] = w_entrepreneurship["Country"].replace(diffs)
-
-male_labor_force["Country"] = male_labor_force["Country"].replace(confusion_sorted)
-male_labor_force["Country"] = male_labor_force["Country"].replace(diffs)
-
-female_labor_force["Country"] = female_labor_force["Country"].replace(confusion_sorted)
-female_labor_force["Country"] = female_labor_force["Country"].replace(diffs)
-
-parliament["Country"] = parliament["Country"].replace(confusion_sorted)
-parliament["Country"] = parliament["Country"].replace(diffs)
-
-adolescent_fertility_rate["Country"] = adolescent_fertility_rate["Country"].replace(confusion_sorted)
-adolescent_fertility_rate["Country"] = adolescent_fertility_rate["Country"].replace(diffs)
-
+dfs_after_confusion_sorted = []
+for df in df_list:
+    df_copy = df.copy()
+    if "Country" in df_copy.columns:
+        df_copy["Country"] = df_copy["Country"].replace(confusion_sorted).replace(diffs)
+    dfs_after_confusion_sorted.append(df_copy)
+f_to_m_unpaid_care_work, w_in_top_income_groups, f_to_m_labor_force_part, maternal_mortality, gender_wage_gap, w_entrepreneurship, male_labor_force, female_labor_force, placement, parliament, adolescent_fertility_rate, human_dev_indices = dfs_after_confusion_sorted
 
 # Kontrol edelim:
+print(f_to_m_unpaid_care_work[f_to_m_unpaid_care_work["Country"] == "Korea"])
 sorted(parliament["Country"].unique())
-
+parliament.columns
 
 # MERGE VAKTİ
-merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
+merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"]) # TODO parliamentın melt'ini tekrar yürütmek gerekiyor. Neden anlamadım. Belki de ülkeleri önce yapıp sonra meltleri yapmak lazım.
 merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
+merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"]) # TODO burada takılıyor.
 merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
+
+### chat gpt başlangıç
+from functools import reduce
+
+# List of dataframes to merge
+dataframes_to_merge = [gender_wage_gap, parliament, maternal_mortality,
+                       male_labor_force, female_labor_force, f_to_m_labor_force_part,
+                       adolescent_fertility_rate]
+
+# Define the columns to merge on
+merge_on_columns = ['Country', 'Year']
+
+# Perform sequential merge using reduce and a lambda function
+merged_df = reduce(lambda left, right: pd.merge(left, right, on=merge_on_columns), dataframes_to_merge)
+
+### chat gpt bitiş
+
 """
 # gdi için gerder_wage_gap olmadan birleştirme
 merged_df_gdi = pd.merge(parliament, maternal_mortality, on=['Country', "Year"])
@@ -1688,8 +1616,6 @@ merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
 
-merged_df.head()
-
 # 2014'ü seçtim
 merged_df_copy = merged_df.copy()
 
@@ -1763,287 +1689,3 @@ cv_results['test_f1'].mean()
 
 cv_results['test_roc_auc'].mean()
 # AUC: 0.7777777777777777
-
-
-merged_df.head()
-
-merged_df["Year"].value_counts()
-# 2014    51
-# 2010    28
-# 2006    26
-# 2002    25
-# 2013    19
-# 2012    18
-# 2009    17
-# 2011    16
-# 2008    15
-# 2001    15
-# 2005    14
-
-# 2014 ve 2010
-df_2014_2010 = merged_df[(merged_df["Year"] == 2014) | (merged_df["Year"] == 2010)]
-df_2014_2010["Country"].value_counts()
-
-desired_countries = df_2014_2010["Country"].value_counts()[df_2014_2010["Country"].value_counts() == 2].index.tolist()
-print("Desired Countries with Counts 2:", desired_countries)
-# Desired Countries with Counts 2: ['Argentina', 'Netherlands', 'Ireland', 'Italy', 'Austria', 'Luxembourg', 'Malta', 'Mexico',
-# 'Panama', 'Germany', 'Paraguay', 'Peru', 'Slovakia', 'Slovenia', 'South Korea', 'Spain', 'Honduras', 'Uruguay', 'Ecuador',
-# 'El Salvador', 'Cyprus', 'Dominican Republic', 'Belgium', 'Colombia', 'Finland', 'France']
-len(desired_countries)
-# 26
-
-# 2014, 2010, 2006
-df_2014_2010_2006 = merged_df[(merged_df["Year"] == 2014) | (merged_df["Year"] == 2010) | (merged_df["Year"] == 2006)]
-df_2014_2010_2006["Country"].value_counts()
-
-desired_countries = df_2014_2010_2006["Country"].value_counts()[df_2014_2010_2006["Country"].value_counts() == 3].index.tolist()
-print("Desired Countries with Counts 3:", desired_countries)
-# Desired Countries with Counts 3: ['Argentina', 'Ecuador', 'Peru', 'Netherlands', 'Luxembourg', 'Austria', 'Italy', 'Ireland',
-# 'Honduras', 'Panama', 'France', 'Finland', 'El Salvador', 'Germany', 'Dominican Republic', 'Spain', 'Belgium', 'Uruguay', 'Paraguay']
-len(desired_countries)
-# 19
-
-
-# 2014, 2010, 2006, 2002
-df_2014_2010_2006_2002 = merged_df[(merged_df["Year"] == 2014) | (merged_df["Year"] == 2010) | (merged_df["Year"] == 2006) | (merged_df["Year"] == 2002)]
-df_2014_2010_2006_2002["Country"].value_counts()
-
-desired_countries = df_2014_2010_2006_2002["Country"].value_counts()[df_2014_2010_2006_2002["Country"].value_counts() == 4].index.tolist()
-print("Desired Countries with Counts 4:", desired_countries)
-# Desired Countries with Counts 4: ['Argentina', 'Panama', 'Ireland', 'Luxembourg', 'Honduras', 'Germany', 'France', 'Finland', 'Netherlands',
-# 'El Salvador', 'Italy', 'Dominican Republic', 'Paraguay', 'Peru', 'Spain', 'Uruguay', 'Belgium', 'Austria']
-len(desired_countries)
-# 18
-
-
-#################### SON MODEL #################################################3
-# Veri çerçevelerini birleştirme
-merged_df = pd.merge(gender_wage_gap, parliament, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, maternal_mortality, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, male_labor_force, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, female_labor_force, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
-merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
-
-
-
-min_year = merged_df['Year'].min() # 1990
-max_year = merged_df['Year'].max() # 2016
-
-merged_df.head()
-
-merged_df.shape # 324, 9
-
-merged_df.isnull().sum()
-# Country                                    0
-# Year                                       0
-# Gender wage gap (%)                        0
-# Women Seat Ratio                          14
-# Maternal Mortality Ratio                   0
-# Male Labour Force Participation Rate       0
-# Female Labour Force Participation Rate     0
-# F/M Labor Force Part                       0
-# Adolescent fertility rate                  0
-
-# şimdilik siliyorum
-merged_df.dropna(subset=["Women Seat Ratio"], inplace=True)
-merged_df.shape# 310, 9
-
-min_year = merged_df['Year'].min() # 1998
-max_year = merged_df['Year'].max() # 2016
-
-def assign_year_category(year):
-    if 1996 <= year < 2003:
-        return 0
-    elif 2003 <= year < 2010:
-        return 1
-    elif 2010 <= year < 2017:
-        return 2
-    else:
-        return None  # Diğer durumlar için NaN (opsiyonel)
-
-# Yeni bir "yıl_kategorisi" sütunu oluşturma
-merged_df['yıl_kategorisi'] = merged_df['Year'].apply(assign_year_category)
-
-merged_df['yıl_kategorisi'].isnull().sum() # 0
-
-merged_df.drop("Year", inplace=True, axis=1)
-
-
-# ülkelere göre one hot encoding
-merged_df["Country"].nunique() # 62
-merged_df.shape # 310
-
-
-merged_df['yıl_kategorisi'].value_counts()
-
-def grab_col_names(dataframe, cat_th=1, car_th=63):
-    """
-
-    Veri setindeki kategorik, numerik ve kategorik fakat kardinal değişkenlerin isimlerini verir.
-    Not: Kategorik değişkenlerin içerisine numerik görünümlü kategorik değişkenler de dahildir.
-
-    Parameters
-    ------
-        dataframe: dataframe
-                Değişken isimleri alınmak istenilen dataframe
-        cat_th: int, optional
-                numerik fakat kategorik olan değişkenler için sınıf eşik değeri
-        car_th: int, optinal
-                kategorik fakat kardinal değişkenler için sınıf eşik değeri
-
-    Returns
-    ------
-        cat_cols: list
-                Kategorik değişken listesi
-        num_cols: list
-                Numerik değişken listesi
-        cat_but_car: list
-                Kategorik görünümlü kardinal değişken listesi
-
-    Examples
-    ------
-        import seaborn as sns
-        df = sns.load_dataset("iris")
-        print(grab_col_names(df))
-
-
-    Notes
-    ------
-        cat_cols + num_cols + cat_but_car = toplam değişken sayısı
-        num_but_cat cat_cols'un içerisinde.
-        Return olan 3 liste toplamı toplam değişken sayısına eşittir: cat_cols + num_cols + cat_but_car = değişken sayısı
-
-    """
-
-    # cat_cols, cat_but_car
-    cat_cols = [col for col in dataframe.columns if dataframe[col].dtypes == "O"]
-    num_but_cat = [col for col in dataframe.columns if dataframe[col].nunique() < cat_th and
-                   dataframe[col].dtypes != "O"]
-    cat_but_car = [col for col in dataframe.columns if dataframe[col].nunique() > car_th and
-                   dataframe[col].dtypes == "O"]
-    cat_cols = cat_cols + num_but_cat
-    cat_cols = [col for col in cat_cols if col not in cat_but_car]
-
-    # num_cols
-    num_cols = [col for col in dataframe.columns if dataframe[col].dtypes != "O"]
-    num_cols = [col for col in num_cols if col not in num_but_cat]
-
-    print(f"Observations: {dataframe.shape[0]}")
-    print(f"Variables: {dataframe.shape[1]}")
-    print(f'cat_cols: {len(cat_cols)}')
-    print(f'num_cols: {len(num_cols)}')
-    print(f'cat_but_car: {len(cat_but_car)}')
-    print(f'num_but_cat: {len(num_but_cat)}')
-    return cat_cols, num_cols, cat_but_car
-
-cat_cols, num_cols, cat_but_car = grab_col_names(merged_df)
-
-def one_hot_encoder(dataframe, categorical_cols, drop_first=True):
-    dataframe = pd.get_dummies(dataframe, columns=categorical_cols, drop_first=drop_first, dtype="int")
-    return dataframe
-
-deneme = one_hot_encoder(merged_df, cat_cols)
-
-# deneme ana dataframe'imiz
-
-deneme.head()
-deneme.columns
-# multiple linear regression
-X = deneme.drop(['Gender wage gap (%)', 'Male Labour Force Participation Rate', 'Female Labour Force Participation Rate'], axis=1)
-y = deneme[["Gender wage gap (%)"]]
-
-##########################
-# Model
-##########################
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
-
-reg_model = LinearRegression().fit(X, y)
-
-# MSE
-y_pred = reg_model.predict(X)
-mean_squared_error(y, y_pred)
-# 14.468011206042203
-
-# RMSE
-np.sqrt(mean_squared_error(y, y_pred))
-# 3.80368389933262
-
-# MAE
-mean_absolute_error(y, y_pred)
-# 2.5845697656950732
-
-
-# R-KARE
-reg_model.score(X, y)
-# 0.842719425168627
-
-
-# standartlaştırma yapalım
-deneme.columns
-# ['Gender wage gap (%)', 'Women Seat Ratio', 'Women Seat Ratio']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
-
-reg_model = LinearRegression().fit(X, y)
-
-rs = RobustScaler()
-deneme["Gender wage gap (%)"] = rs.fit_transform(deneme[["Gender wage gap (%)"]])
-deneme["Women Seat Ratio"] = rs.fit_transform(deneme[["Women Seat Ratio"]])
-deneme["Maternal Mortality Ratio"] = rs.fit_transform(deneme[["Maternal Mortality Ratio"]])
-
-deneme.describe().T
-
-deneme.columns
-
-
-deneme.head()
-
-# MSE
-y_pred = reg_model.predict(X)
-mean_squared_error(y, y_pred)
-# 0.08309789974380676
-
-# RMSE
-np.sqrt(mean_squared_error(y, y_pred))
-# 0.28826706323096773
-
-# MAE
-mean_absolute_error(y, y_pred)
-# 0.19587493487647156
-
-
-# R-KARE
-reg_model.score(X, y)
-# 0.842719425168627
-
-# valida
-##########################
-# Tahmin Başarısını Değerlendirme
-##########################
-
-# 1- hold out yöntemi:
-# Train RMSE
-y_pred = reg_model.predict(X_train)
-np.sqrt(mean_squared_error(y_train, y_pred))
-# 0.27978577008352923
-# yeni dğeşken eklendiği için hata düştü
-
-# Train RKARE
-reg_model.score(X_train, y_train)
-# 0.8619443684603638
-
-# Test RMSE
-y_pred = reg_model.predict(X_test)
-np.sqrt(mean_squared_error(y_test, y_pred))
-# 0.3199518559941478
-# test hatası normalde train hatasından daha yüksek çıkar
-
-# Test RKARE
-reg_model.score(X_test, y_test)
-# 0.7242618894974271
-
-
-deneme.groupby("yıl_kategorisi").agg({"Gender wage gap (%)": "median"})
-
