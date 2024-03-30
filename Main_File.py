@@ -1790,7 +1790,6 @@ merged_df = pd.merge(merged_df, f_to_m_labor_force_part, on=['Country', "Year"])
 merged_df = pd.merge(merged_df, adolescent_fertility_rate, on=['Country', "Year"])
 
 
-
 min_year = merged_df['Year'].min() # 1990
 max_year = merged_df['Year'].max() # 2016
 
@@ -1809,20 +1808,60 @@ merged_df.isnull().sum()
 # F/M Labor Force Part                       0
 # Adolescent fertility rate                  0
 
-# şimdilik siliyorum
-merged_df.dropna(subset=["Women Seat Ratio"], inplace=True)
-merged_df.shape# 310, 9
 
-min_year = merged_df['Year'].min() # 1998
+# doldurma denemesi
+merged_df["Women Seat Ratio"] = merged_df["Women Seat Ratio"].fillna(merged_df.groupby("Country")["Women Seat Ratio"].transform("median"))
+merged_df.isnull().sum()
+
+null_row = merged_df[merged_df.isnull().any(axis=1)]
+# (323, 9)
+
+# bir satır var, bunu sileceğim, bu ülkeden de tek bir satır var zaten
+merged_df.dropna(subset=["Women Seat Ratio"], inplace=True)
+
+min_year = merged_df['Year'].min() # 1990
 max_year = merged_df['Year'].max() # 2016
 
+merged_df["Year"].value_counts()
+
+merged_df["Year"].value_counts().sort_index()
+# Year
+# 1990     1
+# 1992     2
+# 1994     1
+# 1996     2
+# 1998     2
+# 2000    12
+# 2001    15
+# 2002    25
+# 2003    12
+# 2004    12
+# 2005    14
+# 2006    26
+# 2007    13
+# 2008    15
+# 2009    17
+# 2010    28
+# 2011    16
+# 2012    18
+# 2013    19
+# 2014    50
+# 2015    13
+# 2016    10
+
+merged_df["Country"]
+
+country_year_count = merged_df.groupby('Country')['Year'].nunique()
+
 def assign_year_category(year):
-    if 1996 <= year < 2003:
+    if 1990 <= year < 2000:
         return 0
-    elif 2003 <= year < 2010:
+    elif 2000 <= year < 2005:
         return 1
-    elif 2010 <= year < 2017:
+    elif 2005 <= year < 2010:
         return 2
+    elif 2010 <= year < 20017:
+        return 3
     else:
         return None  # Diğer durumlar için NaN (opsiyonel)
 
@@ -1841,133 +1880,43 @@ merged_df.shape # 310
 
 merged_df['yıl_kategorisi'].value_counts()
 
-def grab_col_names(dataframe, cat_th=1, car_th=63):
-    """
+merged_df = pd.get_dummies(merged_df, columns=["Country"], drop_first=True, dtype="int")
 
-    Veri setindeki kategorik, numerik ve kategorik fakat kardinal değişkenlerin isimlerini verir.
-    Not: Kategorik değişkenlerin içerisine numerik görünümlü kategorik değişkenler de dahildir.
-
-    Parameters
-    ------
-        dataframe: dataframe
-                Değişken isimleri alınmak istenilen dataframe
-        cat_th: int, optional
-                numerik fakat kategorik olan değişkenler için sınıf eşik değeri
-        car_th: int, optinal
-                kategorik fakat kardinal değişkenler için sınıf eşik değeri
-
-    Returns
-    ------
-        cat_cols: list
-                Kategorik değişken listesi
-        num_cols: list
-                Numerik değişken listesi
-        cat_but_car: list
-                Kategorik görünümlü kardinal değişken listesi
-
-    Examples
-    ------
-        import seaborn as sns
-        df = sns.load_dataset("iris")
-        print(grab_col_names(df))
-
-
-    Notes
-    ------
-        cat_cols + num_cols + cat_but_car = toplam değişken sayısı
-        num_but_cat cat_cols'un içerisinde.
-        Return olan 3 liste toplamı toplam değişken sayısına eşittir: cat_cols + num_cols + cat_but_car = değişken sayısı
-
-    """
-
-    # cat_cols, cat_but_car
-    cat_cols = [col for col in dataframe.columns if dataframe[col].dtypes == "O"]
-    num_but_cat = [col for col in dataframe.columns if dataframe[col].nunique() < cat_th and
-                   dataframe[col].dtypes != "O"]
-    cat_but_car = [col for col in dataframe.columns if dataframe[col].nunique() > car_th and
-                   dataframe[col].dtypes == "O"]
-    cat_cols = cat_cols + num_but_cat
-    cat_cols = [col for col in cat_cols if col not in cat_but_car]
-
-    # num_cols
-    num_cols = [col for col in dataframe.columns if dataframe[col].dtypes != "O"]
-    num_cols = [col for col in num_cols if col not in num_but_cat]
-
-    print(f"Observations: {dataframe.shape[0]}")
-    print(f"Variables: {dataframe.shape[1]}")
-    print(f'cat_cols: {len(cat_cols)}')
-    print(f'num_cols: {len(num_cols)}')
-    print(f'cat_but_car: {len(cat_but_car)}')
-    print(f'num_but_cat: {len(num_but_cat)}')
-    return cat_cols, num_cols, cat_but_car
-
-cat_cols, num_cols, cat_but_car = grab_col_names(merged_df)
-
-def one_hot_encoder(dataframe, categorical_cols, drop_first=True):
-    dataframe = pd.get_dummies(dataframe, columns=categorical_cols, drop_first=drop_first, dtype="int")
-    return dataframe
-
-deneme = one_hot_encoder(merged_df, cat_cols)
-
-# deneme ana dataframe'imiz
-
-deneme.head()
-deneme.columns
+merged_df.shape
+merged_df.describe().T
+merged_df.head()
+merged_df.columns
 # multiple linear regression
-X = deneme.drop(['Gender wage gap (%)', 'Male Labour Force Participation Rate', 'Female Labour Force Participation Rate'], axis=1)
-y = deneme[["Gender wage gap (%)"]]
+X = merged_df.drop(['Gender wage gap (%)', 'Male Labour Force Participation Rate', 'Female Labour Force Participation Rate'], axis=1)
+y = merged_df[["Gender wage gap (%)"]]
 
 ##########################
 # Model
 ##########################
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
 
-reg_model = LinearRegression().fit(X, y)
-
-# MSE
-y_pred = reg_model.predict(X)
-mean_squared_error(y, y_pred)
-# 14.468011206042203
-
-# RMSE
-np.sqrt(mean_squared_error(y, y_pred))
-# 3.80368389933262
-
-# MAE
-mean_absolute_error(y, y_pred)
-# 2.5845697656950732
-
-
-# R-KARE
-reg_model.score(X, y)
-# 0.842719425168627
-
-
-# standartlaştırma yapalım
-deneme.columns
-# ['Gender wage gap (%)', 'Women Seat Ratio', 'Women Seat Ratio']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=1)
 
-reg_model = LinearRegression().fit(X, y)
+reg_model = LinearRegression().fit(X_train, y_train)
 
 rs = RobustScaler()
-deneme["Gender wage gap (%)"] = rs.fit_transform(deneme[["Gender wage gap (%)"]])
-deneme["Women Seat Ratio"] = rs.fit_transform(deneme[["Women Seat Ratio"]])
-deneme["Maternal Mortality Ratio"] = rs.fit_transform(deneme[["Maternal Mortality Ratio"]])
+merged_df["Gender wage gap (%)"] = rs.fit_transform(merged_df[["Gender wage gap (%)"]])
+merged_df["Women Seat Ratio"] = rs.fit_transform(merged_df[["Women Seat Ratio"]])
+merged_df["Maternal Mortality Ratio"] = rs.fit_transform(merged_df[["Maternal Mortality Ratio"]])
 
-deneme.describe().T
-
-deneme.columns
+merged_df.describe().T
 
 
-deneme.head()
 
 # MSE
 y_pred = reg_model.predict(X)
 mean_squared_error(y, y_pred)
 # 0.08309789974380676
+
+
+giz = mean_squared_error(y, y_pred)
+print("MSE:", giz)
 
 # RMSE
 np.sqrt(mean_squared_error(y, y_pred))
@@ -2008,6 +1957,17 @@ np.sqrt(mean_squared_error(y_test, y_pred))
 reg_model.score(X_test, y_test)
 # 0.7242618894974271
 
+# 2- Cross validation yöntemi
 
-deneme.groupby("yıl_kategorisi").agg({"Gender wage gap (%)": "median"})
+# 5 Katlı CV RMSE
+np.mean(np.sqrt(-cross_val_score(reg_model,
+                                 X,
+                                 y,
+                                 cv=5,
+                                 scoring="neg_mean_squared_error")))
+# 13.971111151974242
+
+
+
+
 
