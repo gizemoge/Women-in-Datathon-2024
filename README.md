@@ -9,4 +9,4 @@ For the analysis, we used:
 
 [Our winning presentation](https://www.canva.com/design/DAGCmgs7Uhc/ipnunP6Dm-lT2gm-iqbx7A/view?utm_content=DAGCmgs7Uhc&utm_campaign=designshare&utm_medium=link&utm_source=editor) was built using Canva.
 
-![Presentation cover page](https://ibb.co/4VLbZRn)
+<img width="1440" alt="Screenshot 2024-04-26 at 18 23 39" src="https://github.com/gizemoge/Datathon/assets/19653777/33fbae03-7115-4c92-ba3d-90ec41915e53">
