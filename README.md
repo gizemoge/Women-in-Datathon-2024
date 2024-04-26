@@ -9,5 +9,4 @@ For the analysis, we used:
 
 [Our winning presentation](https://www.canva.com/design/DAGCmgs7Uhc/ipnunP6Dm-lT2gm-iqbx7A/view?utm_content=DAGCmgs7Uhc&utm_campaign=designshare&utm_medium=link&utm_source=editor) was built using Canva.
 
-
-
+![Presentation cover page](https://www.canva.com/design/DAGCmgs7Uhc/ipnunP6Dm-lT2gm-iqbx7A/view?utm_content=DAGCmgs7Uhc&utm_campaign=designshare&utm_medium=link&utm_source=editor)
