@@ -7,5 +7,7 @@ For the analysis, we used:
 - Heat maps to demonstrate feature correlations,
 - Scikit-learn library for the machine learning steps.
 
-Here is our winning presentation:
-https://www.canva.com/design/DAGCmgs7Uhc/ipnunP6Dm-lT2gm-iqbx7A/view?utm_content=DAGCmgs7Uhc&utm_campaign=designshare&utm_medium=link&utm_source=editor
+[Our winning presentation](https://www.canva.com/design/DAGCmgs7Uhc/ipnunP6Dm-lT2gm-iqbx7A/view?utm_content=DAGCmgs7Uhc&utm_campaign=designshare&utm_medium=link&utm_source=editor) was built using Canva.
+
+
+
