@@ -7,6 +7,8 @@ For the analysis, we used:
 - Heat maps to demonstrate feature correlations,
 - Scikit-learn library for the machine learning steps.
 
+Check out [our winning Kaggle notebook](https://www.kaggle.com/code/edacelikeloglu/1st-place-upschoolxbitexen-datathon-mar24?scriptVersionId=169578347)!
+
 [Our winning presentation](https://www.canva.com/design/DAGCmgs7Uhc/ipnunP6Dm-lT2gm-iqbx7A/view?utm_content=DAGCmgs7Uhc&utm_campaign=designshare&utm_medium=link&utm_source=editor) was built using Canva.
 
 <img width="1440" alt="Screenshot 2024-04-26 at 18 23 39" src="https://github.com/gizemoge/Datathon/assets/19653777/33fbae03-7115-4c92-ba3d-90ec41915e53">
